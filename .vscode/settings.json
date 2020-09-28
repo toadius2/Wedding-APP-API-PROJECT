@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "lib": true,
+        "**/.gitmodules": true,
+        "out.zip": true,
+        "**/node_modules": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
+}

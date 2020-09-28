@@ -1,0 +1,95 @@
+{
+    // Use IntelliSense to learn about possible Node.js debug attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Execute (local)",
+            "env": {
+                "NODE_ENV": "development",
+                "LOCAL": "1",
+                "LOG_DIR": "${workspaceRoot}/logs",
+                "API_EMAIL_FROM": "",
+                "DB_ADMIN": "",
+                "DB_USER": "",
+                "DB_PW": "",
+                "DB_MAIN_HOST": "",
+                "PUSH_ARN_DEV": "",
+                "PUSH_ARN": "",
+                "BUCKET_URL": "",
+                "BUCKET_NAME": "",
+                "BUCKET_REGION": "",
+                "AWS_ACCESS_KEY_ID": "",
+                "AWS_ACCESS_SECRET_KEY": "",
+                "AWS_REGION": "",
+                "FORGOT_PW_URL": "",
+                "AWS_PROFILE_NAME": "",
+                //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
+            },
+            "outputCapture": "std",
+            "program": "${workspaceRoot}/src/index.ts",
+            "outFiles": [
+                "${workspaceRoot}/lib/**/*"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Execute (prod)",
+            "env": {
+                "NODE_ENV": "production",
+                "LOCAL": "1",
+                "LOG_DIR": "${workspaceRoot}/logs",
+                "API_EMAIL_FROM": "",
+                "DB_ADMIN": "",
+                "DB_USER": "",
+                "DB_PW": "",
+                "DB_MAIN_HOST": "",
+                "PUSH_ARN_DEV": "",
+                "PUSH_ARN": "",
+                "BUCKET_URL": "",
+                "BUCKET_NAME": "",
+                "BUCKET_REGION": "",
+                "FORGOT_PW_URL": "",
+                "AWS_PROFILE_NAME": "",
+                //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
+            },
+            "outputCapture": "std",
+            "program": "${workspaceRoot}/src/index.ts",
+            "outFiles": [
+                "${workspaceRoot}/lib/**/*"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Execute (develop)",
+            "env": {
+                "NODE_ENV": "development",
+                "LOCAL": "1",
+                "LOG_DIR": "${workspaceRoot}/logs",
+                "API_EMAIL_FROM": "",
+                "DB_ADMIN": "",
+                "DB_USER": "",
+                "DB_PW": "",
+                "DB_MAIN_HOST": "",
+                "PUSH_ARN_DEV": "",
+                "PUSH_ARN": "",
+                "BUCKET_URL": "",
+                "BUCKET_NAME": "",
+                "BUCKET_REGION": "",
+                "FORGOT_PW_URL": "",
+                "AWS_PROFILE_NAME": "",
+                //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
+            },
+            "outputCapture": "std",
+            "program": "${workspaceRoot}/src/index.ts",
+            "outFiles": [
+                "${workspaceRoot}/lib/**/*"
+            ]
+        },
+    ]
+}
