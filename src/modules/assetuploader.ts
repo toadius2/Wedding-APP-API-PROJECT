@@ -85,10 +85,10 @@ export class Uploader {
 
     exec(): Promise<any> {
         return new Promise((resolve, reject) => {
-            async.parallel(
+            async.parallel<any, any>(
                 this.pipeline.map(t => {
                     return (callback) => {
-                        async.waterfall(t, (err, results) => {
+                        async.waterfall(t, (err: Error | undefined, results) => {
                             callback(err, results);
                         })
                     }
