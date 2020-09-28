@@ -27,7 +27,7 @@ export default class Server {
         this.sequelize = new_sequelize;
 
         this.app.listen(port, () => {
-            logger.info("REST server started");
+            logger.info("REST server started on port " + port);
         });
 
         this.setupHTTPApp();

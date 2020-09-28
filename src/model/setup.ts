@@ -21,8 +21,8 @@ export default function setup(s: Sequelize.Sequelize): void {
     Object.keys(s.models).forEach((modelkey) => {
         let model = s.models[modelkey];
         (<any>model).prototype.cachedToJSON = (<any>model).prototype.toJSON;
-        (<any>model).prototype.toJSON = function (options: { currentUser?: UserInstance} = {}) {
-            if(this._modelOptions.name.singular === 'User' && Boolean(options.currentUser)) {
+        (<any>model).prototype.toJSON = function (options: { currentUser?: UserInstance } = {}) {
+            if (this._modelOptions.name.singular === 'User' && Boolean(options.currentUser)) {
                 return this.cachedToJSON(options);
             }
             let returning = this.cachedToJSON(options);
