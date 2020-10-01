@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node lib/index.js",
     "zip": "rm -rf .uploads && rm -rf .downloads && zip -r out.zip . -x \"node_modules/*\" \".idea/*\" \"dump.rdb\" \"certs/*\" \"deploy.sh/*\" \"sql/*\" \".uploads/*\" \".downloads/*\" \"*.ts\" \"*.d.ts\" \"*.html\" \"*.paw\" tsconfig.json \"*.log\" \"*.zip\" \"src/*\" \".vsc*\" \".git*\" \".DS*\" .ebignore \".elastic*\"",
-    "deploy": "tsc -p . && npm run zip && eb deploy && rm out.zip"
+    "deploy": "tsc -p . && npm run zip && eb deploy && rm out.zip",
+    "tsc": "tsc"
   },
   "author": "Mandaris LLC (sales@mandar.is)",
   "license": "ISC",
@@ -47,6 +48,6 @@
     "@types/validator": "^9.4.2",
     "@types/winston": "2.3.2",
     "@types/node": "10.12.10",
-    "typescript": "^3.2.2"
+    "typescript": "4.0.2"
   }
 }

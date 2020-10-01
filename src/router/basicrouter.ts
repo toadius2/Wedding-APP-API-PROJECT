@@ -151,7 +151,7 @@ export class BasicRouter {
             }
 
             if (model_name() === 'User' && req.params[param] === 'me') {
-                req.params[param] = req.currentUser!.id;
+                req.params[param] = req.currentUser!.id!;
             }
             var includeData: Array<Model<any, any> | IncludeOptions>;
             if (typeof include === 'function') {
