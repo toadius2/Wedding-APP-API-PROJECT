@@ -6,30 +6,29 @@
   "scripts": {
     "start": "node lib/index.js",
     "zip": "rm -rf .uploads && rm -rf .downloads && zip -r out.zip . -x \"node_modules/*\" \".idea/*\" \"dump.rdb\" \"certs/*\" \"deploy.sh/*\" \"sql/*\" \".uploads/*\" \".downloads/*\" \"*.ts\" \"*.d.ts\" \"*.html\" \"*.paw\" tsconfig.json \"*.log\" \"*.zip\" \"src/*\" \".vsc*\" \".git*\" \".DS*\" .ebignore \".elastic*\"",
-    "deploy": "tsc -p . && npm run zip && eb deploy && rm out.zip",
-    "tsc": "tsc"
+    "deploy": "tsc -p . && npm run zip && eb deploy && rm out.zip"
   },
   "author": "Mandaris LLC (sales@mandar.is)",
   "license": "ISC",
   "dependencies": {
     "async": "2.4.0",
     "aws-sdk": "2.124.0",
-    "body-parser": "^1.19.0",
+    "body-parser": "1.17.1",
     "email-validator": "2.0.3",
-    "express": "^4.17.1",
+    "express": "4.15.2",
     "express-bearer-token": "2.1.0",
     "fluent-ffmpeg": "2.1.2",
-    "gm": "^1.23.1",
-    "google-auth-library": "^6.1.0",
+    "gm": "1.23.0",
+    "google-auth-library": "1.6.1",
     "gradelo-db-cache": "./local_modules/gradelo-db-cache",
     "ioredis": "3.1.1",
-    "moment": "^2.29.0",
+    "moment": "2.18.1",
     "multer": "1.3.0",
     "mysql2": "1.5.3",
     "nconf": "0.8.4",
     "password-hash": "1.2.2",
     "request": "2.85.0",
-    "sequelize": "^6.3.5",
+    "sequelize": "4.38.0",
     "uuid": "3.1.0",
     "winston": "2.3.1"
   },
@@ -48,6 +47,6 @@
     "@types/validator": "^9.4.2",
     "@types/winston": "2.3.2",
     "@types/node": "10.12.10",
-    "typescript": "4.0.2"
+    "typescript": "^3.2.2"
   }
 }

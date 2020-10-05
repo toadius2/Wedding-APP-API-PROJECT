@@ -1,0 +1,61 @@
+import * as express from "express"
+import { isAuthorized } from "../middleware/authorization"
+import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
+import { ResourceNotFoundError } from "../../error";
+import { Device } from "../../model";
+
+export class DevicesRouter extends BasicRouter {
+
+    constructor() {
+        super();
+        this.getInternalRouter().delete('/devices/:device_uuid', isAuthorized, DevicesRouter.deleteDevice);
+    }
+
+    public static castUpdateDeviceBody(body: any): any {
+        const updateableProperties = [
+            'app_version',
+            'build_version',
+            'device_token',
+            'token_provider',
+            'device_uuid',
+            'device_data_os',
+            'device_data_os_version',
+            'device_data_device_type',
+            'device_data_device_name',
+            'device_data_device_category',
+            'device_data_carrier',
+            'device_data_battery',
+            'debug',
+            'badge',
+            'language'
+        ];
+        let returnObject = {};
+        for (let key of updateableProperties) {
+            if (body[key])
+                returnObject[key] = body[key];
+        }
+        return returnObject;
+    }
+
+    /**
+     * This function deletes a device and unregisters it from SNS
+     * @param {APIRequest} req
+     * @param {e.Response} res
+     * @param {e.NextFunction} next
+     */
+    private static deleteDevice(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        Device.destroy({
+            where: {
+                user_id: req.currentUser!.id!,
+                device_uuid: req.params.device_uuid
+            },
+            force: true
+        }).then((result) => {
+            if (result === 0) {
+                return next(new ResourceNotFoundError(undefined, 'Device'));
+            } else {
+                res.status(200).json({ 'message': 'Device successfully deleted' });
+            }
+        }).catch(next);
+    }
+}

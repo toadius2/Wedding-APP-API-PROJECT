@@ -7,5 +7,6 @@
         "out.zip": true,
         "**/node_modules": true
     },
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "compile-hero.disable-compile-files-on-did-save-code": false
 }

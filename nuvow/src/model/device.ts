@@ -29,7 +29,7 @@ export interface DeviceAttributes extends base.BaseModelAttributes {
     badge?: number;
 }
 
-export interface DeviceInstance extends Sequelize.Instance<DeviceAttributes>, De0 viceAttributes {
+export interface DeviceInstance extends Sequelize.Instance<DeviceAttributes>, DeviceAttributes {
     sendPush: (content: string, inc: boolean, meta?: any) => Promise<void>;
     updateEndpoint: () => Promise<any>;
 }
