@@ -1,7 +1,7 @@
 import * as express from "express"
 import { APIRequest, APIResponse } from "../basicrouter"
 import { MissingAuthorizationError, SessionNotFoundError, RouteNotFoundError } from "../../error"
-import { DeviceInstance, UserInstance, User, Device, DeviceAttributes } from "../../model";
+import { DeviceInstance, UserInstance, User, Device, DeviceAttributes, Wedding } from "../../model";
 /**
  * This function checks if the provided auth token exists and sets the current device and the current user
  * @param {APIRequest} req
@@ -50,7 +50,7 @@ export function isAuthorized(req: APIRequest, res: APIResponse, next: express.Ne
                 include: [
                     {
                         model: User
-                    }
+                    },
                 ]
             }).then((device: DeviceInstance) => {
                 if (device) {
@@ -118,8 +118,22 @@ export function isRefreshTokenAuthorized(req: APIRequest, res: APIResponse, next
             where: { refresh_token: req.token }
         }).then((user: UserInstance) => {
             if (user) {
-                req.currentUser = user;
-                next();
+                Wedding.findOne({
+                    where: {
+                        user_id: user.id!
+                    }
+                }).then(wedding => {
+                    if (wedding != null) {
+                        req.currentUser = Object.assign({}, user, {
+                            wedding: wedding
+                        });
+                    } else {
+                        req.currentUser = Object.assign({}, user, {
+                            wedding: {}
+                        });
+                    }
+                    next();
+                })
             } else {
                 next(new SessionNotFoundError())
             }

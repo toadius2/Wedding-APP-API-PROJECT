@@ -27,7 +27,7 @@ export default class Server {
         this.sequelize = new_sequelize;
 
         this.app.listen(port, () => {
-            logger.info("REST server started on port " + port);
+            logger.info("REST server started");
         });
 
         this.setupHTTPApp();
@@ -76,7 +76,6 @@ export default class Server {
                 res.status(200).end();
             }).catch(next);
         });
-
         Object.keys(Routers).forEach((version) => {
             Routers[version].forEach((router) => {
                 this.app.use("/" + version, router.getInternalRouter());

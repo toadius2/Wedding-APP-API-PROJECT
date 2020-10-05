@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import * as passwordHash from 'password-hash'
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { AuthenticationInfoInstance, User, UserAttributes } from "../../model"
+import { AuthenticationInfoInstance, User, AuthenticationInfo, UserAttributes } from "../../model"
 import { validateFacebookToken } from "../middleware/facebook"
 import * as EmailValidator from "email-validator"
 import { isString, maxLength, minLength, parallelValidate } from "../middleware/validationrules"
@@ -10,15 +10,17 @@ import * as multer from "multer"
 import { S3 } from "aws-sdk"
 import * as async from "async"
 import * as nconf from "nconf"
-import { InvalidParametersError } from '../../error'
+import { ResourceNotFoundError, InvalidParametersError } from '../../error'
 import { resize } from "../../modules/imageconversion";
 import * as uuid from 'uuid'
+import InternalServerError from "../../error/internalservererror";
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
 
     constructor() {
         super();
+        this.getInternalRouter().get('/users', UsersRouter.getUserByEmail);
         this.getInternalRouter().get('/users/me', isAuthorized, UsersRouter.getUser);
         this.getInternalRouter().post('/users/me/picture', isAuthorized, multer({ dest: '.uploads/' }).single('image'), UsersRouter.processProfilePicture)
         this.getInternalRouter().delete('/users/me/picture', isAuthorized, UsersRouter.removeProfilePicture)
@@ -40,7 +42,19 @@ export class UsersRouter extends BasicRouter {
                 return 'Invalid email registration data'
             }, 'registration_fullname': isString
         }), UsersRouter.newUser);
+
+        this.getInternalRouter().get('/user/:userId', isAuthorized, UsersRouter.getOneUser);
     }
+
+    private static getOneUser(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        User.findById(req.params.userId).then(user => {
+            if (!user) {
+                return next(new ResourceNotFoundError(undefined, 'User'));
+            }
+            res.json(user);
+        }).catch(next);
+    }
+
     /**
      * Returns the current user
      * @param {APIRequest} req
@@ -54,6 +68,42 @@ export class UsersRouter extends BasicRouter {
     }
 
     /**
+     * Returns the users handle if the users email address is known
+     * @param {APIRequest} req
+     * @param {e.Response} res
+     * @param {e.NextFunction} next
+     */
+    private static getUserByEmail(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        User.findOne({
+            where: {
+                email: req.query.email
+            },
+            include: [
+                { model: AuthenticationInfo, as: 'authentication_infos', required: true }
+            ],
+            rejectOnEmpty: true
+        }).then((user) => {
+            if (user) {
+                if (user.authentication_infos && user.authentication_infos.length > 0) {
+                    if (!user.authentication_infos.find(p => p.provider == 'email')) {
+                        res.json({
+                            provider: user.authentication_infos[0].provider
+                        })
+                    } else {
+                        res.json({
+                            username: user.full_name
+                        })
+                    }
+                } else {
+                    next(new InternalServerError(new ResourceNotFoundError(undefined, 'User'), 'User found without auth infos'))
+                }
+            } else {
+                next(new ResourceNotFoundError(undefined, 'User'))
+            }
+        }).catch(next);
+    }
+
+    /**
      * Registers a new user using email or (registers / logs in) a facebook user
      * @param {APIRequest<RegistrationBodyParameters>} req
      * @param {e.Response} res
@@ -64,7 +114,6 @@ export class UsersRouter extends BasicRouter {
             User.create(data, {
                 include: [<any>'authentication_infos']
             }).then((user) => {
-
                 let json = user.toJSON();
                 res.status(201).json(json);
             }).catch(next);

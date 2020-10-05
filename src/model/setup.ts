@@ -1,5 +1,7 @@
 import * as Device from "./device"
 import * as AuthenticationInfo from "./authentication_info"
+import * as Wedding from "./wedding"
+import * as BudgetItem from "./budget_item"
 import * as User from "./user"
 import * as Sequelize from "sequelize"
 import { UserInstance } from "./user";
@@ -11,9 +13,16 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.define(s);
     AuthenticationInfo.define(s);
     Device.define(s);
+    Wedding.define(s);
+    BudgetItem.define(s);
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
+
+    User.User.hasOne(Wedding.Wedding, { as: 'User' });
+    Wedding.Wedding.belongsTo(User.User);
+    
+    Wedding.Wedding.hasMany(BudgetItem.BudgetItem, { as: 'BudgetItems' });
 
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);

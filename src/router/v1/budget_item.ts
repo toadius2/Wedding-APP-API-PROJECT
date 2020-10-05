@@ -23,7 +23,7 @@ export class BudgetItemRouter extends BasicRouter {
             }
         }).then(wedding => {
             if (wedding == null) {
-                  return next(new NoWeddingFoundError('Device'));
+                return next(new NoWeddingFoundError('Wedding not found'));
             } else {
                 BudgetItem.findAll({
                     where: {
@@ -45,8 +45,7 @@ export class BudgetItemRouter extends BasicRouter {
             }
         }).then(wedding => {
             if (wedding == null) {
-                  return next(new NoWeddingFoundError('Device'));
-                
+                return next(new NoWeddingFoundError('No Wedding Found'));
             } else {
                 params = Object.assign({}, params, {
                     wedding_id: wedding!.id
@@ -56,13 +55,11 @@ export class BudgetItemRouter extends BasicRouter {
                     res.status(201).json(json);
                 }).catch(next)
             }
-        }).catch(error => {
-            console.log(error)
-        });
+        }).catch(next);
     }
 
     private static updateBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        const budgetItemId: number = Number(req.params.budget_item_id);
+        const budgetItemId = req.params.budget_item_id;
         let params: BudgetItemAttributes = req.body;
 
         Wedding.findOne({
@@ -71,7 +68,7 @@ export class BudgetItemRouter extends BasicRouter {
             }
         }).then(wedding => {
             if (wedding == null) {
-              
+                return next(new NoWeddingFoundError('No Wedding Found'));
             } else {
                 params = Object.assign({}, params, {
                     updated_at: new Date()
@@ -106,7 +103,7 @@ export class BudgetItemRouter extends BasicRouter {
             }
         }).then(wedding => {
             if (wedding == null) {
-                  return next(new NoWeddingFoundError('Device'));
+                return next(new NoWeddingFoundError('Device'));
             } else {
                 BudgetItem.destroy({
                     where: {
