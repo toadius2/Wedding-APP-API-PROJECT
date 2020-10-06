@@ -2,12 +2,12 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
-   wedding_date?: Date,
-   payment_status?: String,
+    wedding_date?: Date,
+    payment_status?: String,
 }
 
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
-    getWedding: () => Promise<any>
+    getWedding: () => Promise<any> // Todo: ?
 }
 
 export let Wedding: Sequelize.Model<WeddingInstance, WeddingAttributes>;

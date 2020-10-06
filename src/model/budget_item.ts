@@ -2,13 +2,13 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface BudgetItemAttributes extends base.BaseModelAttributes {
-    amount?: string;
-    name?: string;
+    amount?: string;    // Todo: required, remove optional
+    name?: string;       // Todo: required, remove optional
     color?: string;
 }
 
 export interface BudgetItemInstance extends Sequelize.Instance<BudgetItemAttributes>, BudgetItemAttributes {
-    getWedding: () => Promise<any>
+    getWedding: () => Promise<any> // Todo: Use correct types
     // Sequelize.HasOneSetAssociationMixin<User.UserInstance, string>
 }
 
@@ -22,7 +22,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         },
         name: {
             type: Sequelize.STRING(),
-            allowNull: true
+            allowNull: true  // Todo: wrong
         },
         color: {
             type: Sequelize.STRING(),
