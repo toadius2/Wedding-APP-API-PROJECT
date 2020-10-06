@@ -12,7 +12,7 @@ export class BudgetItemRouter extends BasicRouter {
         super();
         this.getInternalRouter().get('/budget-item', isAuthorized, BudgetItemRouter.getItems);
         this.getInternalRouter().post('/budget-item', isAuthorized, BudgetItemRouter.newBudgetItem);
-        this.getInternalRouter().put('/budget-item/:budget_item_id', isAuthorized, BudgetItemRouter.updateBudgetItem);
+        this.getInternalRouter().put('/budget-item/:budget_item_id', isAuthorized, BudgetItemRouter.updateBudgetItem);  // ToDo: Here you can use BasicRouter.populateModel(BudgetItem, 'budget_item_id'). Your req type turns then from APIRequest to ModelRouteRequest<BudgetItemInstance> and you can access the model via req.currentModel. Error is thrown automatic when not existing
         this.getInternalRouter().delete('/budget-item/:budget_item_id', isAuthorized, BudgetItemRouter.deleteItem);
     }
 
@@ -31,7 +31,7 @@ export class BudgetItemRouter extends BasicRouter {
                     }
                 }).then(result => {
                     let json = result.toJSON();
-                    res.status(200).json(json);
+                    res.status(200).json(json); //  ToDo: use .jsonContent, no .toJSON needed then
                 }).catch(next);
             }
         }).catch(next);
@@ -39,7 +39,7 @@ export class BudgetItemRouter extends BasicRouter {
 
     private static newBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params: BudgetItemAttributes = req.body;
-        Wedding.findOne({
+        Wedding.findOne({   // ToDo: This should be a middleware, not redundant code every time. Hint: This middleware could also populate req.currentWedding for example, so you can access the wedding via req.currentWedding. like req.currentUser
             where: {
                 user_id: req.currentUser!.id
             }
@@ -49,10 +49,10 @@ export class BudgetItemRouter extends BasicRouter {
             } else {
                 params = Object.assign({}, params, {
                     wedding_id: wedding!.id
-                });
+                }); // ToDo: You can (and should) use wedding.createBudgetItem (need to decalre types for that like in user.ts line 28 and following)
                 BudgetItem.create(params).then(result => {
                     let json = result.toJSON();
-                    res.status(201).json(json);
+                    res.status(201).json(json); //  ToDo: use .jsonContent, no .toJSON needed then
                 }).catch(next)
             }
         }).catch(next);
@@ -61,7 +61,7 @@ export class BudgetItemRouter extends BasicRouter {
     private static updateBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         const budgetItemId = req.params.budget_item_id;
         let params: BudgetItemAttributes = req.body;
-
+        //  ToDo: You need to check if the budget item actually belongs to the current wedding
         Wedding.findOne({
             where: {
                 user_id: req.currentUser!.id
@@ -71,9 +71,9 @@ export class BudgetItemRouter extends BasicRouter {
                 return next(new NoWeddingFoundError('No Wedding Found'));
             } else {
                 params = Object.assign({}, params, {
-                    updated_at: new Date()
+                    updated_at: new Date() //  ToDo: sequelize does that automatic
                 });
-                BudgetItem.update(params, {
+                BudgetItem.update(params, { //  ToDo: use req.currentModel.update
                     where: {
                         id: budgetItemId,
                         wedding_id: wedding!.id!
@@ -83,7 +83,7 @@ export class BudgetItemRouter extends BasicRouter {
                     if (!result) {
                         return next(new ResourceNotFoundError(undefined, 'BudgetItem'));
                     } else {
-                        res.status(200).json({ 'message': 'Budget item successfully updated' });
+                        res.status(200).json({ 'message': 'Budget item successfully updated' }); //  ToDo: use .jsonContent
                     }
                 }).catch(next);
             }
@@ -105,7 +105,8 @@ export class BudgetItemRouter extends BasicRouter {
             if (wedding == null) {
                 return next(new NoWeddingFoundError('Device'));
             } else {
-                BudgetItem.destroy({
+                //  ToDo: You need to check if the budget item actually belongs to the current wedding
+                BudgetItem.destroy({ //  ToDo: use req.currentModel.destroy
                     where: {
                         id: req.params.budget_item_id,
                         wedding_id: wedding!.id!
@@ -115,7 +116,7 @@ export class BudgetItemRouter extends BasicRouter {
                     if (result === 0) {
                         return next(new ResourceNotFoundError(undefined, 'BudgetItem'));
                     } else {
-                        res.status(200).json({ 'message': 'Budget item successfully deleted' });
+                        res.status(200).json({ 'message': 'Budget item successfully deleted' }); //  ToDo: use .jsonContent
                     }
                 }).catch(next);
             }
