@@ -16,6 +16,7 @@ export class WeddingTaskRouter extends BasicRouter {
     }
 
     private static getWeddingTask(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        // ToDo: Works. but I'd use req.currentWedding.getWeddingTasks
         WeddingTask.findAll({
             where: {
                 wedding_id: req.currentWedding!.id
@@ -27,7 +28,7 @@ export class WeddingTaskRouter extends BasicRouter {
 
     private static newWeddingTask(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params = req.body;
-        params = Object.assign({}, params, {
+        params = Object.assign({}, params, { // ToDo: No need, since you're using createWeddingTask on the wedding object
             wedding_id: req.currentWedding!.id
         });
         req.currentWedding!.createWeddingTask(params).then(result => {
@@ -39,10 +40,10 @@ export class WeddingTaskRouter extends BasicRouter {
         let params: WeddingTaskAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent({ 'message': 'Wedding Task successfully updated' });
+                res.jsonContent({ 'message': 'Wedding Task successfully updated' }); // ToDo: return updated item
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' });
+            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' }); // ToDo: use next(new NotAcessibleError())
         }
     }
 
@@ -52,7 +53,7 @@ export class WeddingTaskRouter extends BasicRouter {
                 res.jsonContent({ 'message': 'Wedding Task successfully deleted' });
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' });
+            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' }); // ToDo: use next(new NotAcessibleError())
         }
     }
 }

@@ -16,6 +16,7 @@ export class BudgetItemRouter extends BasicRouter {
     }
 
     private static getItems(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        // ToDo: Works. but I'd use req.currentWedding.getBudgetItems
         BudgetItem.findAll({
             where: {
                 wedding_id: req.currentWedding!.id
@@ -27,7 +28,7 @@ export class BudgetItemRouter extends BasicRouter {
 
     private static newBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params: BudgetItemAttributes = req.body;
-        params = Object.assign({}, params, {
+        params = Object.assign({}, params, {    // ToDo: No need, since you're using createBudgetItem on the wedding object
             wedding_id: req.currentWedding!.id
         });
         req.currentWedding!.createBudgetItem(params).then(result => {
@@ -39,10 +40,10 @@ export class BudgetItemRouter extends BasicRouter {
         let params: BudgetItemAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent({ 'message': 'Budget item successfully updated' });
+                res.jsonContent({ 'message': 'Budget item successfully updated' }); // ToDo: Return buddget item instead
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' });
+            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' }); // ToDo: use next(new NotAcessibleError())
         }
     }
 
@@ -58,7 +59,7 @@ export class BudgetItemRouter extends BasicRouter {
                 res.jsonContent({ 'message': 'Budget item successfully deleted' });
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' });
+            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' });// ToDo: use next(new NotAcessibleError())
         }
     }
 }

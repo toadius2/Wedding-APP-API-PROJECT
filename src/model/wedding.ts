@@ -4,7 +4,7 @@ import { BudgetItemAttributes, BudgetItemInstance } from "./budget_item";
 import { WeddingTaskAttributes, WeddingTaskInstance } from "./wedding_task";
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
-    wedding_date?: Date,
+    wedding_date?: Date, // ToDo: required
     payment_status?: String,
 }
 
@@ -24,7 +24,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         },
         payment_status: {
             type: Sequelize.ENUM(['not-paid', 'paid', 'pending']),
-            allowNull: true
+            allowNull: true // ToDo: false, set a default value
         },
     };
     Wedding = <Sequelize.Model<WeddingInstance, WeddingAttributes>>

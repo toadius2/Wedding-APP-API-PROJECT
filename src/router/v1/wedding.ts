@@ -16,7 +16,7 @@ export class WeddingRouter extends BasicRouter {
     private static newWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params = req.body;
         params = Object.assign(params, {
-            user_id: req.currentUser!.id
+            user_id: req.currentUser!.id // ToDo: No need, remove
         });
         req.currentUser!.createWedding(params).then(result => {
             res.status(201).jsonContent(result);
@@ -24,6 +24,7 @@ export class WeddingRouter extends BasicRouter {
     }
 
     private static updateWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        // ToDo: req.currentWedding.update..
         Wedding.update({
             wedding_date: req.body.wedding_date,
         }, {
@@ -33,9 +34,9 @@ export class WeddingRouter extends BasicRouter {
             limit: 1
         }).then((result) => {
             if (!result) {
-                return next(new ResourceNotFoundError(undefined, 'Wedding'));
+                return next(new ResourceNotFoundError(undefined, 'Wedding')); // ToDo: no need cause of hasWeddding middleware
             } else {
-                res.jsonContent({ 'message': 'Wedding successfully updated' });
+                res.jsonContent({ 'message': 'Wedding successfully updated' }); // ToDo: return updated weddding
             }
         }).catch(next);
     }
