@@ -18,7 +18,6 @@ export interface DBCacheOptions {
     room?: string;
     ttl?: number;
 }
-
 export default class DBCache {
     private options;
     private redisConnection;

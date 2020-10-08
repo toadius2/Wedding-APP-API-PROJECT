@@ -138,7 +138,7 @@ export function mosaic(images: Array<string>): Promise<string> {
         }
         let local_dir = ".downloads/" + uuid.v4()
         mkdirSync(local_dir);
-        async.parallel(images.map(i => {
+        async.parallel<string, Error>(images.map(i => {
             return (callback) => {
                 download(i).then(result => {
                     let path = local_dir + "/" + uuid.v4() + ".jpg";
@@ -163,7 +163,7 @@ export function mosaic(images: Array<string>): Promise<string> {
                 pipe.geometry("+0+0")
                     .toBuffer('jpg', function (err, buffer) {
                         results.forEach(r => {
-                            unlinkSync((r as string));
+                            unlinkSync(r!);
                         })
                         rmdirSync(local_dir);
                         if (err) {

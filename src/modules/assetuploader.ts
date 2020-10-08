@@ -88,8 +88,8 @@ export class Uploader {
             async.parallel(
                 this.pipeline.map(t => {
                     return (callback) => {
-                        async.waterfall(t, (err, results) => {
-                            callback(err, results);
+                        async.waterfall<any, Error>(t, (err, results) => {
+                            callback(err as any, results);
                         })
                     }
                 }), (err, reuslts) => {

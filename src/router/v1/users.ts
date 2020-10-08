@@ -76,7 +76,7 @@ export class UsersRouter extends BasicRouter {
     private static getUserByEmail(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         User.findOne({
             where: {
-                email: req.query.email
+                email: req.query.email as string
             },
             include: [
                 { model: AuthenticationInfo, as: 'authentication_infos', required: true }
