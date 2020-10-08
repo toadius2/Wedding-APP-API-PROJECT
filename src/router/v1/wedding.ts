@@ -1,7 +1,8 @@
 import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
+import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { ResourceNotFoundError, NoWeddingFoundError } from "../../error";
+import { ResourceNotFoundError } from "../../error";
 import { Wedding } from "../../model";
 
 export class WeddingRouter extends BasicRouter {
@@ -9,7 +10,7 @@ export class WeddingRouter extends BasicRouter {
     constructor() {
         super();
         this.getInternalRouter().post('/wedding', isAuthorized, WeddingRouter.newWedding);
-        this.getInternalRouter().put('/wedding/:wedding_id', isAuthorized, WeddingRouter.updateWedding); // ToDo: User can only have one wedding. No need to send id of that wedding. use hasWeddding middleware
+        this.getInternalRouter().put('/wedding', isAuthorized, hasWedding, WeddingRouter.updateWedding);
     }
 
     private static newWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
@@ -17,41 +18,24 @@ export class WeddingRouter extends BasicRouter {
         params = Object.assign(params, {
             user_id: req.currentUser!.id
         });
-        // ToDo: Use req.currentUser.createWedding
-        Wedding.create(params).then(result => {
-            let json = result.toJSON();
-            res.status(201).json(json);
+        req.currentUser!.createWedding(params).then(result => {
+            res.status(201).jsonContent(result);
         }).catch(next);
     }
 
     private static updateWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        const weddingId = req.params.wedding_id;
-        const weddingDate = req.body.wedding_date;
-        // ToDo: Use midddleware
-        Wedding.findOne({
+        Wedding.update({
+            wedding_date: req.body.wedding_date,
+        }, {
             where: {
-                user_id: req.currentUser!.id,
-                id: weddingId,
-            }
-        }).then(wedding => {
-            if (wedding == null) {
-                return next(new NoWeddingFoundError());
+                id: req.currentWedding!.id!
+            },
+            limit: 1
+        }).then((result) => {
+            if (!result) {
+                return next(new ResourceNotFoundError(undefined, 'Wedding'));
             } else {
-                Wedding.update({
-                    wedding_date: weddingDate,
-                    updated_at: new Date() // ToDo: no need
-                }, {
-                    where: {
-                        id: wedding!.id!
-                    },
-                    limit: 1
-                }).then((result) => {
-                    if (!result) {
-                        return next(new ResourceNotFoundError(undefined, 'Wedding'));
-                    } else {
-                        res.status(200).json({ 'message': 'Wedding successfully updated' }); // ToDo: user .jsonContent
-                    }
-                }).catch(next);
+                res.jsonContent({ 'message': 'Wedding successfully updated' });
             }
         }).catch(next);
     }

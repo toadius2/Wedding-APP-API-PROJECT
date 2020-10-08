@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "outDir": "./lib/",
+        "strictNullChecks": true,
+        "declaration": true,
+        "target": "es6",
+        "module": "commonjs",
+        "lib": [
+            "es7"
+        ]
+    },
+    "include": [
+        "./src/**/*",
+        "./node_modules/@types/**/*.d.ts"
+    ],
+    "exclude": [],
+    "noEmit": true
+}

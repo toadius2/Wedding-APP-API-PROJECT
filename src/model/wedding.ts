@@ -1,5 +1,7 @@
 import * as base from "./base"
 import * as Sequelize from "sequelize"
+import { BudgetItemAttributes, BudgetItemInstance } from "./budget_item";
+import { WeddingTaskAttributes, WeddingTaskInstance } from "./wedding_task";
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
     wedding_date?: Date,
@@ -7,7 +9,9 @@ export interface WeddingAttributes extends base.BaseModelAttributes {
 }
 
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
-    getWedding: () => Promise<any> // Todo: ?
+    createBudgetItem: Sequelize.HasManyCreateAssociationMixin<BudgetItemAttributes, BudgetItemInstance>,
+
+    createWeddingTask: Sequelize.HasManyCreateAssociationMixin<WeddingTaskAttributes, WeddingTaskInstance>
 }
 
 export let Wedding: Sequelize.Model<WeddingInstance, WeddingAttributes>;

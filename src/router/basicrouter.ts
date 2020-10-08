@@ -2,7 +2,7 @@ import * as express from "express"
 import * as Sequelize from "sequelize"
 import { IncludeOptions, Model } from "sequelize"
 import { InvalidParametersError } from "../error";
-import { DeviceInstance, UserInstance } from "../model";
+import { DeviceInstance, UserInstance, WeddingInstance } from "../model";
 import { ResourceNotFoundError } from "../error";
 import { isObject } from "util";
 import DBCache from "gradelo-db-cache";
@@ -17,6 +17,7 @@ export interface APIRequest<BodyParameters = any> extends express.Request {
     db_cache?: DBCache
     currentUser?: UserInstance;
     currentDevice?: DeviceInstance;
+    currentWedding?: WeddingInstance;
     body: BodyParameters;
     token: string;
 }

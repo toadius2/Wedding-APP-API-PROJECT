@@ -2,4 +2,5 @@ export { AuthenticationInfo, AuthenticationInfoAttributes, AuthenticationInfoIns
 export { User, UserAttributes, UserInstance } from './user'
 export { Device, DeviceAttributes, DeviceInstance } from './device'
 export { Wedding, WeddingAttributes, WeddingInstance } from './wedding'
+export { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from './wedding_task'
 export { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from './budget_item'
