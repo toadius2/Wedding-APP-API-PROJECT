@@ -4,6 +4,7 @@ import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
+import { NotAccessibleError } from "../../error";
 
 export class BudgetItemRouter extends BasicRouter {
 
@@ -16,21 +17,13 @@ export class BudgetItemRouter extends BasicRouter {
     }
 
     private static getItems(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        // ToDo: Works. but I'd use req.currentWedding.getBudgetItems
-        BudgetItem.findAll({
-            where: {
-                wedding_id: req.currentWedding!.id
-            }
-        }).then(result => {
+        req.currentWedding!.getBudgetItem().then(result => {
             res.jsonContent(result);
         }).catch(next);
     }
 
     private static newBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params: BudgetItemAttributes = req.body;
-        params = Object.assign({}, params, {    // ToDo: No need, since you're using createBudgetItem on the wedding object
-            wedding_id: req.currentWedding!.id
-        });
         req.currentWedding!.createBudgetItem(params).then(result => {
             res.status(201).jsonContent(result);
         }).catch(next);
@@ -40,10 +33,10 @@ export class BudgetItemRouter extends BasicRouter {
         let params: BudgetItemAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent({ 'message': 'Budget item successfully updated' }); // ToDo: Return buddget item instead
+                res.jsonContent(result); 
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' }); // ToDo: use next(new NotAcessibleError())
+            next(new NotAccessibleError())
         }
     }
 
@@ -59,7 +52,7 @@ export class BudgetItemRouter extends BasicRouter {
                 res.jsonContent({ 'message': 'Budget item successfully deleted' });
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Budget item inaccessible' });// ToDo: use next(new NotAcessibleError())
+            next(new NotAccessibleError())
         }
     }
 }

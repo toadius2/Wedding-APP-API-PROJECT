@@ -4,11 +4,12 @@ import { BudgetItemAttributes, BudgetItemInstance } from "./budget_item";
 import { WeddingTaskAttributes, WeddingTaskInstance } from "./wedding_task";
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
-    wedding_date?: Date, // ToDo: required
+    wedding_date: Date,
     payment_status?: String,
 }
 
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
+    getBudgetItem: Sequelize.HasManyGetAssociationsMixin<BudgetItemInstance>
     createBudgetItem: Sequelize.HasManyCreateAssociationMixin<BudgetItemAttributes, BudgetItemInstance>,
 
     createWeddingTask: Sequelize.HasManyCreateAssociationMixin<WeddingTaskAttributes, WeddingTaskInstance>
@@ -24,7 +25,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         },
         payment_status: {
             type: Sequelize.ENUM(['not-paid', 'paid', 'pending']),
-            allowNull: true // ToDo: false, set a default value
+            allowNull: false
         },
     };
     Wedding = <Sequelize.Model<WeddingInstance, WeddingAttributes>>
