@@ -34,8 +34,8 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
-    Events.Events.hasMany(Participants.Participants, { as: 'Participants' });
-    Participants.Participants.belongsTo(Events.Events, { as: 'participants' });
+    Events.Events.hasMany(Participants.Participants);
+    Participants.Participants.belongsTo(Events.Events);
 
     Object.keys(s.models).forEach((modelkey) => {
         let model = s.models[modelkey];
