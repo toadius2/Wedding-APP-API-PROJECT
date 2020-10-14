@@ -1,7 +1,7 @@
 import * as Device from "./device"
 import * as AuthenticationInfo from "./authentication_info"
 import * as Wedding from "./wedding"
-// import * as Participants from "./participants"
+import * as Participants from "./participants"
 import * as Events from "./events"
 import * as BudgetItem from "./budget_item"
 import * as User from "./user"
@@ -20,7 +20,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     WeddingTask.define(s);
     BudgetItem.define(s);
     Events.define(s);
-    // Participants.define(s);
+    Participants.define(s);
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
@@ -35,8 +35,12 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
-    // Events.Events.hasMany(Participants.Participants);
-    // Participants.Participants.belongsTo(Events.Events);
+    Events.Events.hasMany(Participants.Participants);
+    Participants.Participants.belongsTo(Events.Events);
+
+    Events.Events.addScope('defaultScope', {
+        include: [{model: Participants.Participants}]
+    }, { override: true });
 
     Object.keys(s.models).forEach((modelkey) => {
         let model = s.models[modelkey];

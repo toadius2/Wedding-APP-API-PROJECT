@@ -22,9 +22,8 @@ export class BudgetItemRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static newBudgetItem(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        let params: BudgetItemAttributes = req.body;
-        req.currentWedding!.createBudgetItem(params).then(result => {
+    private static newBudgetItem(req: APIRequest<BudgetItemAttributes>, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createBudgetItem(req.body).then(result => {
             res.status(201).jsonContent(result);
         }).catch(next);
     }

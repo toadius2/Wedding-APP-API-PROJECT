@@ -17,6 +17,7 @@ export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, 
     getEvents: Sequelize.HasManyGetAssociationsMixin<EventsInstance>
     removeEvent: Sequelize.HasManyRemoveAssociationMixin<EventsInstance, string>
 
+    getWeddingTask: Sequelize.HasManyGetAssociationsMixin<WeddingTaskInstance>
     createWeddingTask: Sequelize.HasManyCreateAssociationMixin<WeddingTaskAttributes, WeddingTaskInstance>
 }
 

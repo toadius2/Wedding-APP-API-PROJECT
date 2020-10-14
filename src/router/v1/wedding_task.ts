@@ -4,6 +4,7 @@ import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
+import { NotAccessibleError } from "../../error";
 
 export class WeddingTaskRouter extends BasicRouter {
 
@@ -16,22 +17,13 @@ export class WeddingTaskRouter extends BasicRouter {
     }
 
     private static getWeddingTask(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        // ToDo: Works. but I'd use req.currentWedding.getWeddingTasks
-        WeddingTask.findAll({
-            where: {
-                wedding_id: req.currentWedding!.id
-            }
-        }).then(result => {
+        req.currentWedding!.getWeddingTask().then(result => {
             res.jsonContent(result);
         }).catch(next);
     }
 
-    private static newWeddingTask(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        let params = req.body;
-        params = Object.assign({}, params, { // ToDo: No need, since you're using createWeddingTask on the wedding object
-            wedding_id: req.currentWedding!.id
-        });
-        req.currentWedding!.createWeddingTask(params).then(result => {
+    private static newWeddingTask(req: APIRequest<WeddingTaskAttributes>, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createWeddingTask(req.body).then(result => {
             res.status(201).json(result);
         }).catch(next);
     }
@@ -40,10 +32,10 @@ export class WeddingTaskRouter extends BasicRouter {
         let params: WeddingTaskAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent({ 'message': 'Wedding Task successfully updated' }); // ToDo: return updated item
+                res.jsonContent(result);
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' }); // ToDo: use next(new NotAcessibleError())
+            next(new NotAccessibleError());
         }
     }
 
@@ -53,7 +45,7 @@ export class WeddingTaskRouter extends BasicRouter {
                 res.jsonContent({ 'message': 'Wedding Task successfully deleted' });
             }).catch(next);
         } else {
-            res.status(401).jsonContent({ 'message': 'Wedding Task inaccessible' }); // ToDo: use next(new NotAcessibleError())
+            next(new NotAccessibleError());
         }
     }
 }
