@@ -23,13 +23,12 @@ export class EventsRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static getEvent(req:  ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
-       res.jsonContent(req.currentModel);
+    private static getEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
+        res.jsonContent(req.currentModel);
     }
 
-    private static newEvent(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        const params: EventsAttributes = req.body;
-        req.currentWedding!.createEvent(params).then(result => {
+    private static newEvent(req: APIRequest<EventsAttributes>, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createEvent(req.body).then(result => {
             res.jsonContent(result);
         }).catch(next);
     }
@@ -38,7 +37,7 @@ export class EventsRouter extends BasicRouter {
         let params: EventsAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent(result); 
+                res.jsonContent(result);
             }).catch(next);
         } else {
             next(new NotAccessibleError())
