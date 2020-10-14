@@ -1,17 +1,17 @@
 import * as base from "./base"
 import * as Sequelize from "sequelize"
-import { Time } from "aws-sdk/clients/codepipeline";
 
 export interface EventsAttributes extends base.BaseModelAttributes {
     name: string;
     date: Date;
-    time: Time;
+    // time: Time;
     duration: Number;
     color?:string;
+    participants: string;
 }
 
 export interface EventsInstance extends Sequelize.Instance<EventsAttributes>, EventsAttributes {
-
+    wedding_id: string;
 }
 
 export let Events: Sequelize.Model<EventsInstance, EventsAttributes>;
@@ -33,6 +33,16 @@ export function define(sequelize: Sequelize.Sequelize): void {
         color: {
             type: Sequelize.STRING(),
             allowNull: true
+        },
+        participants: {
+            type: Sequelize.STRING(),
+            get: function() {
+                return JSON.parse(this.getDataValue('participants'))
+            },
+            set: function(value) {
+                return this.setDataValue('participants', JSON.stringify(value))
+            },
+            allowNull: false
         }
     };
     Events = <Sequelize.Model<EventsInstance, EventsAttributes>>

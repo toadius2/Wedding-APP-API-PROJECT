@@ -2,6 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 import { BudgetItemAttributes, BudgetItemInstance } from "./budget_item";
 import { WeddingTaskAttributes, WeddingTaskInstance } from "./wedding_task";
+import { EventsAttributes, EventsInstance } from "./events";
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
     wedding_date: Date,
@@ -11,6 +12,10 @@ export interface WeddingAttributes extends base.BaseModelAttributes {
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
     getBudgetItem: Sequelize.HasManyGetAssociationsMixin<BudgetItemInstance>
     createBudgetItem: Sequelize.HasManyCreateAssociationMixin<BudgetItemAttributes, BudgetItemInstance>,
+
+    createEvent: Sequelize.HasManyCreateAssociationMixin<EventsAttributes, EventsInstance>,
+    getEvents: Sequelize.HasManyGetAssociationsMixin<EventsInstance>
+    removeEvent: Sequelize.HasManyRemoveAssociationMixin<EventsInstance, string>
 
     createWeddingTask: Sequelize.HasManyCreateAssociationMixin<WeddingTaskAttributes, WeddingTaskInstance>
 }
