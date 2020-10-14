@@ -6,3 +6,4 @@ export { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from './weddi
 export { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from './budget_item'
 export { Events, EventsAttributes, EventsInstance } from './events'
 export { Participants, ParticipantsAttributes, ParticipantsInstance } from './participants'
+export { WeddingTaskTemplate, WeddingTaskTemplateAttributes, WeddingTaskTemplateInstance } from './wedding_task_template'

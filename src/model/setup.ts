@@ -8,6 +8,7 @@ import * as User from "./user"
 import * as Sequelize from "sequelize"
 import { UserInstance } from "./user";
 import * as WeddingTask from "./wedding_task"
+import * as WeddingTaskTemplate  from "./wedding_task_template"
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -21,6 +22,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     BudgetItem.define(s);
     Events.define(s);
     Participants.define(s);
+    WeddingTaskTemplate.define(s);
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });

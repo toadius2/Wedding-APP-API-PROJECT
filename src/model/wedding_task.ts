@@ -2,7 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface WeddingTaskAttributes extends base.BaseModelAttributes {
-    name?: string   // ToDo: Name is required
+    name: string
     completed: boolean
 }
 

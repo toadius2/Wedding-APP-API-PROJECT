@@ -2,6 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
+import { WeddingTaskTemplate } from "../../model";
 
 export class WeddingRouter extends BasicRouter {
 
@@ -13,8 +14,17 @@ export class WeddingRouter extends BasicRouter {
 
     private static newWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         let params = req.body;
-        req.currentUser!.createWedding(params).then(result => {
-            res.status(201).jsonContent(result);
+        req.currentUser!.createWedding(params).then(wedding => {
+            WeddingTaskTemplate.all().then(templates => {
+                templates.forEach(template => {
+                    let obj = {
+                        'name': template.name,
+                        'completed': false
+                    }
+                    wedding.createWeddingTask(obj);
+                });
+            });
+            res.status(201).jsonContent(wedding);
         }).catch(next);
     }
 
