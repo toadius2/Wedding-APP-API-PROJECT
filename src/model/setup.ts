@@ -9,6 +9,7 @@ import * as Sequelize from "sequelize"
 import { UserInstance } from "./user";
 import * as WeddingTask from "./wedding_task"
 import * as WeddingTaskTemplate  from "./wedding_task_template"
+import * as WeddingTimeline  from "./wedding_timeline"
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -23,6 +24,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     Events.define(s);
     Participants.define(s);
     WeddingTaskTemplate.define(s);
+    WeddingTimeline.define(s);
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
@@ -33,6 +35,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.Wedding.hasMany(BudgetItem.BudgetItem, { as: 'BudgetItems' });
     Wedding.Wedding.hasMany(WeddingTask.WeddingTask, { as: 'WeddingTask' });
     Wedding.Wedding.hasMany(Events.Events, { as: 'Events' });
+    Wedding.Wedding.hasMany(WeddingTimeline.WeddingTimeline, { as: 'WeddingTimeline' });
 
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);

@@ -7,3 +7,4 @@ export { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from './budget_i
 export { Events, EventsAttributes, EventsInstance } from './events'
 export { Participants, ParticipantsAttributes, ParticipantsInstance } from './participants'
 export { WeddingTaskTemplate, WeddingTaskTemplateAttributes, WeddingTaskTemplateInstance } from './wedding_task_template'
+export { WeddingTimeline, WeddingTimelineAttributes, WeddingTimelineInstance } from './wedding_timeline'
