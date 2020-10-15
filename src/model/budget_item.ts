@@ -2,7 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface BudgetItemAttributes extends base.BaseModelAttributes {
-    amount: string;
+    amount: Number;
     name: string;
     color?: string;
 }
@@ -16,7 +16,7 @@ export let BudgetItem: Sequelize.Model<BudgetItemInstance, BudgetItemAttributes>
 export function define(sequelize: Sequelize.Sequelize): void {
     let definition: Sequelize.DefineAttributes = {
         amount: {
-            type: Sequelize.STRING(),
+            type: Sequelize.NUMERIC(),
             allowNull: false
         },
         name: {

@@ -5,14 +5,21 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
+import { isString } from "../middleware/validationrules";
 
 export class BudgetItemRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().get('/budget-item', isAuthorized, hasWedding, BudgetItemRouter.getItems);
-        this.getInternalRouter().post('/budget-item', isAuthorized, hasWedding, BudgetItemRouter.newBudgetItem);
-        this.getInternalRouter().put('/budget-item/:budget_item_id', isAuthorized, hasWedding, BasicRouter.populateModel(BudgetItem, 'budget_item_id'), BudgetItemRouter.updateBudgetItem);
+        this.getInternalRouter().post('/budget-item', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            name: isString,
+            color: isString
+        }), BudgetItemRouter.newBudgetItem);
+        this.getInternalRouter().put('/budget-item/:budget_item_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            name: isString,
+            color: isString
+        }), BasicRouter.populateModel(BudgetItem, 'budget_item_id'), BudgetItemRouter.updateBudgetItem);
         this.getInternalRouter().delete('/budget-item/:budget_item_id', isAuthorized, hasWedding, BasicRouter.populateModel(BudgetItem, 'budget_item_id'), BudgetItemRouter.deleteItem);
     }
 
@@ -32,7 +39,7 @@ export class BudgetItemRouter extends BasicRouter {
         let params: BudgetItemAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(params).then(result => {
-                res.jsonContent(result); 
+                res.jsonContent(result);
             }).catch(next);
         } else {
             next(new NotAccessibleError())

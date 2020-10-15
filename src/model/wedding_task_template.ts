@@ -2,7 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface WeddingTaskTemplateAttributes extends base.BaseModelAttributes {
-    name: string   
+    name: string
 }
 
 export interface WeddingTaskTemplateInstance extends Sequelize.Instance<WeddingTaskTemplateAttributes>, WeddingTaskTemplateAttributes {

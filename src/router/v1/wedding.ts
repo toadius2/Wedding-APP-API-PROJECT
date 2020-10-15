@@ -2,19 +2,25 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { WeddingTaskTemplate } from "../../model";
+import { WeddingAttributes, WeddingTaskTemplate } from "../../model";
+import { isDate, isString } from "../middleware/validationrules";
 
 export class WeddingRouter extends BasicRouter {
 
     constructor() {
         super();
-        this.getInternalRouter().post('/wedding', isAuthorized, WeddingRouter.newWedding);
-        this.getInternalRouter().put('/wedding', isAuthorized, hasWedding, WeddingRouter.updateWedding);
+        this.getInternalRouter().post('/wedding', isAuthorized, BasicRouter.requireKeysOfTypes({
+            wedding_date: isDate,
+            payment_status: isString
+        }), WeddingRouter.newWedding);
+        this.getInternalRouter().put('/wedding', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            wedding_date: isDate,
+            payment_status: isString
+        }), WeddingRouter.updateWedding);
     }
 
-    private static newWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        let params = req.body;
-        req.currentUser!.createWedding(params).then(wedding => {
+    private static newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
+        req.currentUser!.createWedding(req.body).then(wedding => {
             WeddingTaskTemplate.all().then(templates => {
                 templates.forEach(template => {
                     let obj = {
@@ -31,8 +37,8 @@ export class WeddingRouter extends BasicRouter {
     private static updateWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.update({
             wedding_date: req.body.wedding_date,
-        }).then((result) => {
-            res.jsonContent({ 'message': 'Wedding successfully updated' }); // ToDo: return updated weddding
+        }).then(wedding => {
+            res.jsonContent(wedding); 
         }).catch(next);
     }
 }

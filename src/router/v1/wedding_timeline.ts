@@ -3,16 +3,24 @@ import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingTimeline, WeddingTimelineAttributes, WeddingTimelineInstance } from "../../model";
+
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
+import { isString, isDate } from "../middleware/validationrules";
 
 export class WeddingTimelineRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().get('/wedding-timeline', isAuthorized, hasWedding, WeddingTimelineRouter.getWeddingTimeline);
-        this.getInternalRouter().post('/wedding-timeline', isAuthorized, hasWedding, WeddingTimelineRouter.newWeddingTimeline);
-        this.getInternalRouter().put('/wedding-timeline/:wedding_timeline_id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTimeline, 'wedding_timeline_id'), WeddingTimelineRouter.updateWeddingTimeline);
+        this.getInternalRouter().post('/wedding-timeline', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            title: isString,
+            time: isDate
+        }), WeddingTimelineRouter.newWeddingTimeline);
+        this.getInternalRouter().put('/wedding-timeline/:wedding_timeline_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            title: isString,
+            time: isDate
+        }), BasicRouter.populateModel(WeddingTimeline, 'wedding_timeline_id'), WeddingTimelineRouter.updateWeddingTimeline);
         this.getInternalRouter().delete('/wedding-timeline/:wedding_timeline_id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTimeline, 'wedding_timeline_id'), WeddingTimelineRouter.deleteWeddingTimeline);
     }
 

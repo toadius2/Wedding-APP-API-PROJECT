@@ -24,7 +24,8 @@ export class LoginRouter extends BasicRouter {
             email: (value: any): true | string => {
                 return EmailValidator.validate(value) || 'Invalid email address'
             },
-            password: isString, device: {
+            password: isString,
+            device: {
                 device_uuid: isString,
                 app_version: isString,
                 build_version: isString,

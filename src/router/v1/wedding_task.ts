@@ -5,14 +5,21 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
+import { isString, isBoolean } from "../middleware/validationrules";
 
 export class WeddingTaskRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().get('/wedding-task', isAuthorized, hasWedding, WeddingTaskRouter.getWeddingTask);
-        this.getInternalRouter().post('/wedding-task', isAuthorized, hasWedding, WeddingTaskRouter.newWeddingTask);
-        this.getInternalRouter().put('/wedding-task/:wedding_task_id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.updateWeddingTask);
+        this.getInternalRouter().post('/wedding-task', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            name: isString,
+            completed: isBoolean
+        }), WeddingTaskRouter.newWeddingTask);
+        this.getInternalRouter().put('/wedding-task/:wedding_task_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
+            name: isString,
+            completed: isBoolean
+        }), BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.updateWeddingTask);
         this.getInternalRouter().delete('/wedding-task', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.deleteWeddingTask);
     }
 
