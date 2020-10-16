@@ -178,12 +178,13 @@ export function isEnum(enumeration: any[]): ValidatorFunction<any[]> {
  * @param value
  * @returns {boolean}
  */
-export function parallelValidateBlock(rules: ValidatorFunction<any>[], value?: any | undefined): ((value: any) => true | string) {
+export function parallelValidateBlock(rules: ValidatorFunction<any>[]): ((value: any) => true | string) {
 
     return (value) => {
         for (let checker of rules) {
-            if (!checker(value)) {
-                return 'The validation failed'
+            let result = checker(value)
+            if (result !== true) {
+                return result
             }
         }
         return true
@@ -198,8 +199,9 @@ export function parallelValidateBlock(rules: ValidatorFunction<any>[], value?: a
  */
 export function parallelValidate(rules: ValidatorFunction<any>[], value?: any | undefined): true | string {
     for (let checker of rules) {
-        if (!checker(value)) {
-            return 'The validation failed'
+        let result = checker(value)
+        if (result !== true) {
+            return result
         }
     }
     return true
