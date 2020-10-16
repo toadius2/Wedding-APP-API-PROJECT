@@ -5,8 +5,24 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { Events, EventsAttributes, EventsInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
-import { isDate, isString, isNumber, isArray } from "../middleware/validationrules";
+import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
 import * as EmailValidator from 'email-validator';
+
+const EventMiddleware = BasicRouter.requireKeysOfTypes({
+    name: isString,
+    date: isDate,
+    duration: isNumber,
+    color: isString,
+    Participants: parallelValidateBlock([isArray, (vaule: Array<{ email: string }>) => {
+        return vaule.every(item => {
+            return EmailValidator.validate(item.email)
+        }) || 'Invalid Participants'
+    }]),
+    email: (value: any): true | string => {
+        return EmailValidator.validate(value) || 'Invalid email address'
+    },
+    status: isString
+})
 
 export class EventsRouter extends BasicRouter {
 
@@ -14,28 +30,8 @@ export class EventsRouter extends BasicRouter {
         super();
         this.getInternalRouter().get('/events', isAuthorized, hasWedding, EventsRouter.getEvents);
         this.getInternalRouter().get('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.getEvent);
-        this.getInternalRouter().post('/events', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
-            name: isString,
-            date: isDate,
-            duration: isNumber,
-            color: isString,
-            Participants: isArray,
-            email: (value: any): true | string => {
-                return EmailValidator.validate(value) || 'Invalid email address'
-            },
-            status: isString
-        }), EventsRouter.newEvent);
-        this.getInternalRouter().put('/events/:event_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
-            name: isString,
-            date: isDate,
-            duration: isNumber,
-            color: isString,
-            Participants: isArray,
-            email: (value: any): true | string => {
-                return EmailValidator.validate(value) || 'Invalid email address'
-            },
-            status: isString
-        }), BasicRouter.populateModel(Events, 'event_id'), EventsRouter.updateEvent);
+        this.getInternalRouter().post('/events', isAuthorized, hasWedding, EventMiddleware, EventsRouter.newEvent);
+        this.getInternalRouter().put('/events/:event_id', isAuthorized, hasWedding, EventMiddleware, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.updateEvent);
         this.getInternalRouter().delete('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.deleteEvent);
     }
 
