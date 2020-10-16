@@ -68,6 +68,7 @@ export function isArrayOfType(ofType: string): ValidatorFunction<any> {
         if (value !== undefined && Array.isArray(value)) {
             let isDifferentType = false;
             value.forEach(function (item) {
+                console.debug(typeof item)
                 if (typeof item !== ofType) {
                     isDifferentType = true;
                 }
