@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { Events, EventsAttributes, EventsInstance } from "../../model";
+import { Events, EventsAttributes, EventsInstance, EventsBody } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
@@ -12,16 +12,12 @@ const EventMiddleware = BasicRouter.requireKeysOfTypes({
     name: isString,
     date: isDate,
     duration: isNumber,
-    color: isString,
-    Participants: parallelValidateBlock([isArray, (vaule: Array<{ email: string }>) => {
+    'color?': isString,
+    participants: parallelValidateBlock([isArray, (vaule: Array<{ email: string }>) => {
         return vaule.every(item => {
             return EmailValidator.validate(item.email)
         }) || 'Invalid Participants'
-    }]),
-    email: (value: any): true | string => {
-        return EmailValidator.validate(value) || 'Invalid email address'
-    },
-    status: isString
+    }])
 })
 
 export class EventsRouter extends BasicRouter {
@@ -45,10 +41,16 @@ export class EventsRouter extends BasicRouter {
         res.jsonContent(req.currentModel);
     }
 
-    private static newEvent(req: APIRequest<EventsAttributes>, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.createEvent(req.body).then(result => {
-            res.jsonContent(result);
-        }).catch(next);
+    private static newEvent(req: APIRequest<EventsBody>, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createEvent(req.body).then(async (event) =>  {
+            req.body.participants.forEach(element => {
+                event.createParticipants({ email: element.email, status: 'pending' });
+            });
+            event = await event.reload();
+            res.jsonContent(event);
+        }).catch(error => {
+            console.debug(error);
+        });
     }
 
     private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
