@@ -1,5 +1,7 @@
 import * as base from "./base"
 import * as Sequelize from "sequelize"
+import { ParticipantsAttributes, ParticipantsInstance } from "./participants";
+
 
 export interface EventsAttributes extends base.BaseModelAttributes {
     name: string;
@@ -8,8 +10,15 @@ export interface EventsAttributes extends base.BaseModelAttributes {
     color?:string;
 }
 
-export interface EventsInstance extends Sequelize.Instance<EventsAttributes>, EventsAttributes {
+export interface EventsBody extends EventsAttributes {
+    participants: Array<ParticipantsAttributes>
+}
+
+export interface EventsInstance extends Sequelize.Instance<EventsBody>, EventsBody {
     wedding_id: string;
+
+    createParticipants: Sequelize.HasManyCreateAssociationMixin<ParticipantsAttributes, ParticipantsInstance>,
+    removeParticipants: Sequelize.HasManyRemoveAssociationMixin<ParticipantsAttributes, string>
 }
 
 export let Events: Sequelize.Model<EventsInstance, EventsAttributes>;
