@@ -7,7 +7,7 @@ export interface EventsAttributes extends base.BaseModelAttributes {
     name: string;
     date: Date;
     duration: Number;
-    color?:string;
+    color?: string;
 }
 
 export interface EventsBody extends EventsAttributes {
@@ -17,8 +17,8 @@ export interface EventsBody extends EventsAttributes {
 export interface EventsInstance extends Sequelize.Instance<EventsBody>, EventsBody {
     wedding_id: string;
 
-    createParticipants: Sequelize.HasManyCreateAssociationMixin<ParticipantsAttributes, ParticipantsInstance>,
-    removeParticipants: Sequelize.HasManyRemoveAssociationMixin<ParticipantsAttributes, string>
+    createParticipant: Sequelize.HasManyCreateAssociationMixin<ParticipantsAttributes, ParticipantsInstance>,
+    removeParticipant: Sequelize.HasManyRemoveAssociationMixin<ParticipantsAttributes, string>
 }
 
 export let Events: Sequelize.Model<EventsInstance, EventsAttributes>;

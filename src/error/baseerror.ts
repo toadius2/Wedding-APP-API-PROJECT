@@ -1,5 +1,5 @@
 export default class BasicError extends Error {
-    isCritical: boolean = false;
+    isCritical?: boolean = false;
     type: string = 'InternalServerError';
     status: number = 500;
     message: string;
