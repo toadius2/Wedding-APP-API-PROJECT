@@ -44,7 +44,7 @@ export class EventsRouter extends BasicRouter {
     private static newEvent(req: APIRequest<EventsBody>, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.createEvent(req.body).then(async (event) => {
             req.body.participants.forEach(element => {
-                event.createParticipants({ email: element.email, status: 'pending' });
+                event.createParticipant({ email: element.email, status: 'pending' });
             });
             event = await event.reload();
             res.jsonContent(event);
