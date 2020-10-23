@@ -7,6 +7,7 @@ import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
 import * as EmailValidator from 'email-validator';
+import { Transaction } from "sequelize";
 
 const EventMiddleware = BasicRouter.requireKeysOfTypes({
     name: isString,
@@ -42,17 +43,20 @@ export class EventsRouter extends BasicRouter {
     }
 
     private static newEvent(req: APIRequest<EventsBody>, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.createEvent(req.body).then((event) => {
-            return Promise.all(req.body.participants.map(participant => {
-                return event.createParticipant({ email: participant.email, status: 'pending' });
-            })).then(() => {
-                return event
-            })
+        req.sequelize.transaction((t: Transaction) => {
+            return req.currentWedding!.createEvent(req.body).then((event) => {
+                return Promise.all(req.body.participants.map(participant => {
+                    return event.createParticipant({ email: participant.email, status: 'pending' });
+                })).then(() => {
+                    return event
+                })
+            });
         }).then(event => {
             event.reload().then(reload => {
                 res.jsonContent(reload);
             });
         }).catch(next);
+
     }
 
     private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
