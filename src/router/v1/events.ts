@@ -42,15 +42,17 @@ export class EventsRouter extends BasicRouter {
     }
 
     private static newEvent(req: APIRequest<EventsBody>, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.createEvent(req.body).then(async (event) => {
-            req.body.participants.forEach(element => {
-                event.createParticipant({ email: element.email, status: 'pending' });
+        req.currentWedding!.createEvent(req.body).then((event) => {
+            return Promise.all(req.body.participants.map(participant => {
+                return event.createParticipant({ email: participant.email, status: 'pending' });
+            })).then(() => {
+                return event
+            })
+        }).then(event => {
+            event.reload().then(reload => {
+                res.jsonContent(reload);
             });
-            event = await event.reload();
-            res.jsonContent(event);
-        }).catch(error => {
-            console.debug(error);
-        });
+        }).catch(next);
     }
 
     private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
