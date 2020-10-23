@@ -8,8 +8,8 @@ import * as User from "./user"
 import * as Sequelize from "sequelize"
 import { UserInstance } from "./user";
 import * as WeddingTask from "./wedding_task"
-import * as WeddingTaskTemplate  from "./wedding_task_template"
-import * as WeddingTimeline  from "./wedding_timeline"
+import * as WeddingTaskTemplate from "./wedding_task_template"
+import * as WeddingTimeline from "./wedding_timeline"
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -40,11 +40,14 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
-    Events.Events.hasMany(Participants.Participants);
+    Events.Events.hasMany(Participants.Participants, {  onDelete: 'CASCADE', as: 'participants' });
     Participants.Participants.belongsTo(Events.Events);
 
     Events.Events.addScope('defaultScope', {
-        include: [{model: Participants.Participants}]
+        include: [{
+            model: Participants.Participants,
+            as: 'participants'
+        }]
     }, { override: true });
 
     Object.keys(s.models).forEach((modelkey) => {

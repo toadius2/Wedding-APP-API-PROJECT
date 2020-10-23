@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { Events, EventsAttributes, EventsInstance, EventsBody } from "../../model";
+import { Events, EventsInstance, EventsBody, Participants } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
@@ -59,12 +59,42 @@ export class EventsRouter extends BasicRouter {
 
     }
 
-    private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
-        let params: EventsAttributes = req.body;
+    private static updateEvent(req: ModelRouteRequest<EventsInstance, EventsBody>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
-            req.currentModel.update(params).then(result => {
-                res.jsonContent(result);
-            }).catch(next);
+            req.currentModel.update(req.body).then(event => {
+                let allPromises: Array<Promise<any>> = [];
+                const deletions = Promise.all(req.currentModel.participants.map(participant => {
+                    const toDelete = req.body.participants.find(element => element.email === participant.email);
+                    if (toDelete)
+                        return Participants.destroy({
+                            where: {
+                                id: participant.id!
+                            }
+                        });
+                    else
+                        return 0;
+                }));
+                // const additions = Promise.all(req.body.participants.map(participant => {
+                //     Participants.findOne({
+                //         where: {
+                //             email: participant.email
+                //         }
+                //     }).then(element => {
+                //         if (element === null) {
+                //             return event.createParticipant({ email: participant.email, status: 'pending' });
+                //         }
+                //     })
+                // }));
+                allPromises.push(deletions);
+                // allPromises.push(additions);
+                return Promise.all(allPromises).then(result => {
+                    return event;
+                })
+            }).then(event => {
+                event.reload().then(reload => {
+                    res.jsonContent(reload);
+                });
+            }).catch(e => console.log(e));
         } else {
             next(new NotAccessibleError())
         }
