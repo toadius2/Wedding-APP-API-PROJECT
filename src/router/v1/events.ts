@@ -66,11 +66,7 @@ export class EventsRouter extends BasicRouter {
                 const deletions = Promise.all(req.currentModel.participants.map(participant => {
                     const toDelete = req.body.participants.find(element => element.email === participant.email);
                     if (toDelete)
-                        return Participants.destroy({
-                            where: {
-                                id: participant.id!
-                            }
-                        });
+                        return participant.destroy()
                     else
                         return 0; // ToDo: So you're either returning a Promise, or 0. That wont work. you're array would look like this:
                     //  [Promise, Promise, 0, 0, Promise] -> must be all promises. So just return Promise.resolve(0)

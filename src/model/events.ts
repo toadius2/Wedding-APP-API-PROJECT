@@ -10,12 +10,9 @@ export interface EventsAttributes extends base.BaseModelAttributes {
     color?: string;
 }
 
-export interface EventsBody extends EventsAttributes {
-    participants: Array<ParticipantsAttributes>
-}
-
-export interface EventsInstance extends Sequelize.Instance<EventsBody>, EventsBody {
+export interface EventsInstance extends Sequelize.Instance<EventsAttributes>, EventsAttributes {
     wedding_id: string;
+    participants: Array<ParticipantsInstance>
 
     createParticipant: Sequelize.HasManyCreateAssociationMixin<ParticipantsAttributes, ParticipantsInstance>,
     removeParticipant: Sequelize.HasManyRemoveAssociationMixin<ParticipantsAttributes, string>
