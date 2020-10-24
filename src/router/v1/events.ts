@@ -72,7 +72,8 @@ export class EventsRouter extends BasicRouter {
                             }
                         });
                     else
-                        return 0;
+                        return 0; // ToDo: So you're either returning a Promise, or 0. That wont work. you're array would look like this:
+                    //  [Promise, Promise, 0, 0, Promise] -> must be all promises. So just return Promise.resolve(0)
                 }));
                 // const additions = Promise.all(req.body.participants.map(participant => {
                 //     Participants.findOne({
@@ -85,7 +86,7 @@ export class EventsRouter extends BasicRouter {
                 //         }
                 //     })
                 // }));
-                allPromises.push(deletions);
+                allPromises.push(deletions);    // ToDo: wont work, you're pushing a array as element. you need to either convert your deletions to arguemnts (...deletions), or use concat
                 // allPromises.push(additions);
                 return Promise.all(allPromises).then(result => {
                     return event;
