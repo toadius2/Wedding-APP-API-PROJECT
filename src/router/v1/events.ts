@@ -68,7 +68,7 @@ export class EventsRouter extends BasicRouter {
                     if (toDelete)
                         return participant.destroy()
                     else
-                        return 0; // ToDo: So you're either returning a Promise, or 0. That wont work. you're array would look like this:
+                        return Promise.resolve(); // ToDo: So you're either returning a Promise, or 0. That wont work. you're array would look like this:
                     //  [Promise, Promise, 0, 0, Promise] -> must be all promises. So just return Promise.resolve(0)
                 }));
                 // const additions = Promise.all(req.body.participants.map(participant => {
