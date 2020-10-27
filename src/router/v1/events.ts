@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { Events, EventsInstance, EventsBody, Participants } from "../../model";
+import { Events, EventsInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
@@ -42,7 +42,7 @@ export class EventsRouter extends BasicRouter {
         res.jsonContent(req.currentModel);
     }
 
-    private static newEvent(req: APIRequest<EventsBody>, res: APIResponse, next: express.NextFunction) {
+    private static newEvent(req: APIRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
         req.sequelize.transaction((t: Transaction) => {
             return req.currentWedding!.createEvent(req.body).then((event) => {
                 return Promise.all(req.body.participants.map(participant => {
@@ -59,34 +59,44 @@ export class EventsRouter extends BasicRouter {
 
     }
 
-    private static updateEvent(req: ModelRouteRequest<EventsInstance, EventsBody>, res: APIResponse, next: express.NextFunction) {
+    private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(req.body).then(event => {
-                let allPromises: Array<Promise<any>> = [];
-                const deletions = Promise.all(req.currentModel.participants.map(participant => {
+                // let allPromises: Array<Promise<any>> = [];
+                console.log(req.currentModel.participants.length);
+                const deletions = req.currentModel.participants.map(participant => {
+                    console.log("Database Email: " + participant.email);
                     const toDelete = req.body.participants.find(element => element.email === participant.email);
-                    if (toDelete)
+                    console.log("Body Email: " + toDelete.email);
+                    if (!toDelete) {
+                        console.log('deleted');
                         return participant.destroy()
-                    else
-                        return Promise.resolve(); // ToDo: So you're either returning a Promise, or 0. That wont work. you're array would look like this:
-                    //  [Promise, Promise, 0, 0, Promise] -> must be all promises. So just return Promise.resolve(0)
-                }));
-                // const additions = Promise.all(req.body.participants.map(participant => {
-                //     Participants.findOne({
+                    }
+                    else {
+                        console.log('not deleted');
+                        return Promise.resolve();
+                    }
+                });
+                // const additions = req.body.participants.map(participant => {
+                //     return Participants.findOne({
                 //         where: {
                 //             email: participant.email
                 //         }
                 //     }).then(element => {
-                //         if (element === null) {
+                //         if (element === undefined) {
                 //             return event.createParticipant({ email: participant.email, status: 'pending' });
+                //         } else {
+                //             return Promise.resolve(participant);
                 //         }
                 //     })
-                // }));
-                allPromises.push(deletions);    // ToDo: wont work, you're pushing a array as element. you need to either convert your deletions to arguemnts (...deletions), or use concat
-                // allPromises.push(additions);
-                return Promise.all(allPromises).then(result => {
+                // });
+                // allPromises = { ...deletions }
+                // console.log(allPromises);
+                // ToDo: wont work, you're pushing a array as element. you need to either convert your deletions to arguemnts (...deletions), or use concat
+                return Promise.all(deletions).then(result => {
                     return event;
                 })
+                // return event;
             }).then(event => {
                 event.reload().then(reload => {
                     res.jsonContent(reload);
