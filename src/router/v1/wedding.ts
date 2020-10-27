@@ -31,6 +31,7 @@ export class WeddingRouter extends BasicRouter {
                 });
             });
             res.status(201).jsonContent(wedding);
+            return null;    // prevent promise warning (http://goo.gl/rRqMUw)
         }).catch(next);
     }
 
@@ -38,7 +39,7 @@ export class WeddingRouter extends BasicRouter {
         req.currentWedding!.update({
             wedding_date: req.body.wedding_date,
         }).then(wedding => {
-            res.jsonContent(wedding); 
+            res.jsonContent(wedding);
         }).catch(next);
     }
 }

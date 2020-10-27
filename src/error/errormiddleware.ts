@@ -1,7 +1,7 @@
 import * as er from "../error"
 import * as l from "../logger"
 import * as seq from "sequelize"
-import {UniqueConstraintError} from "sequelize"
+import { UniqueConstraintError } from "sequelize"
 import BasicError from "./baseerror"
 import ResourceAlreadyExists from "./resourcealreadyexists";
 import InvalidParametersError from "./invalidparameterserror";
@@ -29,12 +29,9 @@ export let prepareErrorForResponse = (err: Error, route?: string): BasicError =>
             mperr = new er.InternalServerError(err);
     }
     (<any>mperr).route = route;
-    if (mperr.type == "MissingParametersError" || mperr.type == "RouteNotFoundError") {
+    if (['MissingAuthorizationError', 'MissingParametersError', 'RouteNotFoundError', 'RateLimitReachedError', 'ResourceNotFound'].includes(mperr.type)) {
     } else if (mperr.isCritical) {
         l.error("Critical Error", mperr, "Server-RouteEndHandler-CatchError");
-    }
-    else {
-        l.error("Error", mperr, "Server-RouteEndHandler-CatchError");
     }
     delete mperr.isCritical;
     if ('encapsulatedError' in mperr) {
