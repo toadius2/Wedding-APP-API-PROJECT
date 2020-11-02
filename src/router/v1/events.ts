@@ -46,7 +46,7 @@ export class EventsRouter extends BasicRouter {
         res.jsonContent(req.currentModel);
     }
 
-    private static newEvent(req: APIRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
+    private static newEvent(req: APIRequest<EventRequest>, res: APIResponse, next: express.NextFunction) {
         req.sequelize.transaction((t: Transaction) => {
             return req.currentWedding!.createEvent(req.body).then((event) => {
                 return Promise.all(req.body.participants.map(participant => {
