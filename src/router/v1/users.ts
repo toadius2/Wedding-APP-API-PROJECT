@@ -2,10 +2,10 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import * as passwordHash from 'password-hash'
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { AuthenticationInfoInstance, User, AuthenticationInfo, UserAttributes } from "../../model"
+import { AuthenticationInfoInstance, User, AuthenticationInfo, UserAttributes, DeviceAttributes } from "../../model"
 import { validateFacebookToken } from "../middleware/facebook"
 import * as EmailValidator from "email-validator"
-import { isString, maxLength, minLength, parallelValidate } from "../middleware/validationrules"
+import { isBoolean, isString, maxLength, minLength, parallelValidate } from "../middleware/validationrules"
 import * as multer from "multer"
 import { S3 } from "aws-sdk"
 import * as async from "async"
@@ -14,6 +14,7 @@ import { ResourceNotFoundError, InvalidParametersError } from '../../error'
 import { resize } from "../../modules/imageconversion";
 import * as uuid from 'uuid'
 import InternalServerError from "../../error/internalservererror";
+import { DevicesRouter } from "./devices"
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
@@ -40,7 +41,14 @@ export class UsersRouter extends BasicRouter {
                     return true
                 }
                 return 'Invalid email registration data'
-            }, 'registration_fullname': isString
+            }, 'registration_fullname': isString,
+            device: {
+                device_uuid: isString,
+                app_version: isString,
+                build_version: isString,
+                debug: isBoolean,
+                "language": isString,
+            }
         }), UsersRouter.newUser);
 
         this.getInternalRouter().get('/user/:userId', isAuthorized, UsersRouter.getOneUser);
@@ -114,8 +122,10 @@ export class UsersRouter extends BasicRouter {
             User.create(data, {
                 include: [<any>'authentication_infos']
             }).then((user) => {
-                let json = user.toJSON();
-                res.status(201).json(json);
+                return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([created, device]) => {
+                    res.status(201)
+                    res.jsonContent((device as any).toJSON({ with_session: true }));
+                }).catch(next);
             }).catch(next);
         };
 
@@ -274,6 +284,7 @@ type EmailRegistration = {
 interface RegistrationBodyParameters {
     registration_data: EmailRegistration;
     registration_fullname: string;
+    device: DeviceAttributes
 }
 
 /**
@@ -283,6 +294,7 @@ interface FacebookRegistrationBodyParameters {
     registration_data: FacebookRegistration;
     registration_username: string;
     registration_fullname: string;
+    device: DeviceAttributes
 }
 
 

@@ -118,43 +118,10 @@ export class LoginRouter extends BasicRouter {
     static login(req: APIRequest<LoginData>, res: APIResponse, next: express.NextFunction) {
         LoginRouter.doLogin(req.body).then(user => {
             req.currentUser = user
-            Device.findOrBuild({
-                where: {
-                    device_uuid: req.body.device.device_uuid
-                },
-                paranoid: false
-            }).spread(async (model: DeviceInstance, created: boolean) => {
-                let updateBody = DevicesRouter.castUpdateDeviceBody(req.body.device);
-                for (let key of Object.keys(updateBody)) {
-                    model.set(key, updateBody[key]);
-                }
-                model.set('user_id', req.currentUser!.id);
-                if (model.deleted_at)
-                    await model.restore({})
-                model.save().then((device: DeviceInstance) => {
-                    if (req.db_cache)
-                        req.db_cache.invalidateModel('Device', req.token);
-                    if (updateBody.device_token)
-                        device.updateEndpoint().catch(err => {
-                        });
-                    return device.reload({
-                        include: [{ model: User, as: 'User' }]
-                    }).then((device => {
-                        res.status(created ? 201 : 200)
-                        res.jsonContent((device as any).toJSON({ with_session: true }));
-                    }))
-                }).catch(next);
-                if (updateBody.badge !== undefined && updateBody.badge == 0) {
-                    req.currentUser!.getDevices().then(devices => {
-                        devices.forEach(d => {
-                            d.badge = 0;
-                            d.save();
-                        })
-                    });
-                }
-                return null;
+            return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([created, device]) => {
+                res.status(created ? 201 : 200)
+                res.jsonContent((device as any).toJSON({ with_session: true }));
             }).catch(next);
-            return null
         }).catch(next);
     }
 

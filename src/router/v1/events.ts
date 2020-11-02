@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { Events, EventsInstance } from "../../model";
+import { Events, EventsAttributes, EventsInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
@@ -20,6 +20,10 @@ const EventMiddleware = BasicRouter.requireKeysOfTypes({
         }) || 'Invalid Participants'
     }])
 })
+
+interface EventRequest extends EventsAttributes {
+    participants: Array<{ email: string }>
+}
 
 export class EventsRouter extends BasicRouter {
 

@@ -2,13 +2,42 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { ResourceNotFoundError } from "../../error";
-import { Device } from "../../model";
+import { Device, DeviceAttributes, DeviceInstance, User, UserInstance } from "../../model";
 
 export class DevicesRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().delete('/devices/:device_uuid', isAuthorized, DevicesRouter.deleteDevice);
+    }
+
+    public static findOrCreateDevice(device: DeviceAttributes, user: UserInstance, req: APIRequest) {
+        return Device.findOrBuild({
+            where: {
+                device_uuid: device.device_uuid
+            },
+            paranoid: false
+        }).spread(async (model: DeviceInstance, created: boolean) => {
+            let updateBody = DevicesRouter.castUpdateDeviceBody(device);
+            for (let key of Object.keys(updateBody)) {
+                model.set(key, updateBody[key]);
+            }
+            model.set('user_id', user.id);
+            if (model.deleted_at)
+                await model.restore({})
+            return model.save().then((device: DeviceInstance) => {
+                if (req.db_cache)
+                    req.invalidateCache(req.token);
+                if (updateBody.device_token)
+                    device.updateEndpoint().catch(err => {
+                    });
+                return device.reload({
+                    include: [{ model: User, as: 'User' }]
+                }).then((device => {
+                    return [created, device]
+                }))
+            })
+        })
     }
 
     public static castUpdateDeviceBody(body: any): any {
