@@ -2,6 +2,7 @@ import * as express from "express"
 import { APIRequest, APIResponse } from "../basicrouter"
 import { MissingAuthorizationError, SessionNotFoundError, RouteNotFoundError } from "../../error"
 import { DeviceInstance, UserInstance, User, Device, DeviceAttributes, Wedding } from "../../model";
+import { DOMAINS } from "../../config";
 /**
  * This function checks if the provided auth token exists and sets the current device and the current user
  * @param {APIRequest} req
@@ -9,9 +10,11 @@ import { DeviceInstance, UserInstance, User, Device, DeviceAttributes, Wedding }
  * @param {e.NextFunction} next
  */
 export function isAuthorized(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-    if (req.token) {
+    const domain = DOMAINS[0].replace(/[^a-zA-Z]/gi, '')
+    if (req.token || req.cookies && req.cookies[`${domain}_session`]) {
+        const token = req.token || req.cookies[`${domain}_session`]
         if (req.db_cache) {
-            req.db_cache.getModel<DeviceAttributes>('Device', req.token).then(attributes => {
+            req.db_cache.getModel<DeviceAttributes>('Device', token).then(attributes => {
                 let device = Device.build(attributes, {
                     include: [
                         { model: User }
@@ -24,7 +27,7 @@ export function isAuthorized(req: APIRequest, res: APIResponse, next: express.Ne
                 next();
             }).catch(err => {
                 Device.findOne({
-                    where: { session_token: req.token },
+                    where: { session_token: token },
                     include: [
                         {
                             model: User
@@ -36,7 +39,7 @@ export function isAuthorized(req: APIRequest, res: APIResponse, next: express.Ne
                         req.currentUser = device.User;
                         next();
                         if (req.db_cache) {
-                            req.db_cache.cacheModel(device, 'Device', req.token);
+                            req.db_cache.cacheModel(device, 'Device', token);
                         }
                     } else {
                         next(new SessionNotFoundError())
@@ -46,11 +49,11 @@ export function isAuthorized(req: APIRequest, res: APIResponse, next: express.Ne
             })
         } else {
             Device.findOne({
-                where: { session_token: req.token },
+                where: { session_token: token },
                 include: [
                     {
                         model: User
-                    },
+                    }
                 ]
             }).then((device: DeviceInstance) => {
                 if (device) {

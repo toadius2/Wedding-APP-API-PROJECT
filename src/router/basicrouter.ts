@@ -20,12 +20,18 @@ export interface APIRequest<BodyParameters = any> extends express.Request {
     currentWedding?: WeddingInstance;
     body: BodyParameters;
     token: string;
+
+    invalidateCache(forToken?: string): void
+    isMobile(): boolean
+    // extended props ts
+    aborted: boolean
 }
 
 export type IncludeOptionsReturning = <T>(req: APIRequest<T>) => Array<Model<any, any> | IncludeOptions>;
 
 export interface APIResponse extends express.Response {
     jsonContent(body: any, headers?: any | null, pagination?: any | null)
+    setAuthCookie(token: string, unset?: boolean, admin?: boolean)
 }
 
 export interface ModelRouteRequest<Model, BodyParameters = any> extends APIRequest<BodyParameters> {

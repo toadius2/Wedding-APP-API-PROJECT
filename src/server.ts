@@ -10,6 +10,8 @@ import * as bearerToken from 'express-bearer-token';
 import * as nconf from "nconf"
 import DBCache from 'gradelo-db-cache'
 import applyCORS from "./router/middleware/cors";
+import * as cookieParser from 'cookie-parser'
+import { DOMAINS } from "./config"
 
 export default class Server {
     app: express.Express;
@@ -35,6 +37,14 @@ export default class Server {
 
     private setupHTTPApp() {
         this.app.use((req: APIRequest, res: APIResponse, callback) => {
+            req.invalidateCache = (forToken?: string) => {
+                if (req.db_cache && (forToken || req.token || req.cookies['bpm_session'])) {
+                    req.db_cache.invalidateModel('Device', forToken || req.token || req.cookies['bpm_session'])
+                }
+            }
+            req.isMobile = () => {
+                return Boolean(req.headers['user-agent'] && req.headers['user-agent'].startsWith('bpmmobile'))
+            }
             res.jsonContent = (body: any, headers?: any | null, pagination?: any | null) => {
                 if (Array.isArray(body)) {
                     body = body.map((data) => {
@@ -55,6 +65,27 @@ export default class Server {
                 }
                 res.json(payload);
             };
+            res.setAuthCookie = (token: string, unset: boolean = false, admin: boolean = false) => {
+                let domain = DOMAINS[0].replace(/[^a-zA-Z]/gi, '')
+                const key = admin ? `${domain}_session_admin` : `${domain}_session`
+                if (unset) {
+                    DOMAINS.forEach(domain => {
+                        res.clearCookie(key, {
+                            secure: false,
+                            path: '/',
+                            domain: domain
+                        })
+                    })
+                } else {
+                    DOMAINS.forEach(domain => {
+                        res.cookie(key, token, {
+                            secure: false,
+                            path: '/',
+                            domain: domain
+                        })
+                    })
+                }
+            };
             callback();
         });
         this.app.use(applyCORS);
@@ -62,6 +93,7 @@ export default class Server {
             limit: '20mb'
         }));
         this.app.use(bearerToken());
+        this.app.use(cookieParser());
         this.app.disable('etag');
         this.app.disable('x-powered-by');
 
