@@ -63,49 +63,34 @@ export class EventsRouter extends BasicRouter {
 
     }
 
-    private static updateEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
+    private static updateEvent(req: ModelRouteRequest<EventsInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.update(req.body).then(event => {
-                // let allPromises: Array<Promise<any>> = [];
-                console.log(req.currentModel.participants.length);
                 const deletions = req.currentModel.participants.map(participant => {
-                    console.log("Database Email: " + participant.email);
-                    const toDelete = req.body.participants.find(element => element.email === participant.email);
-                    console.log("Body Email: " + toDelete.email);
-                    if (!toDelete) {
-                        console.log('deleted');
+                    const stillExisting = req.body.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
+                    if (!stillExisting) {
                         return participant.destroy()
                     }
-                    else {
-                        console.log('not deleted');
-                        return Promise.resolve();
-                    }
+                    return Promise.resolve();
                 });
-                // const additions = req.body.participants.map(participant => {
-                //     return Participants.findOne({
-                //         where: {
-                //             email: participant.email
-                //         }
-                //     }).then(element => {
-                //         if (element === undefined) {
-                //             return event.createParticipant({ email: participant.email, status: 'pending' });
-                //         } else {
-                //             return Promise.resolve(participant);
-                //         }
-                //     })
-                // });
-                // allPromises = { ...deletions }
-                // console.log(allPromises);
-                // ToDo: wont work, you're pushing a array as element. you need to either convert your deletions to arguemnts (...deletions), or use concat
-                return Promise.all(deletions).then(result => {
+                const additions = req.body.participants.map(participant => {
+                    const isNew = req.currentModel.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) == undefined
+                    if (isNew) {
+                        return event.createParticipant({ email: participant.email, status: 'pending' }).then(() => {
+                            return;// turn the promise into a void promise to not confuse TS
+                        })
+                    }
+                    return Promise.resolve();
+                });
+
+                return Promise.all([...deletions, ...additions]).then(() => {
                     return event;
                 })
-                // return event;
             }).then(event => {
                 event.reload().then(reload => {
                     res.jsonContent(reload);
                 });
-            }).catch(e => console.log(e));
+            }).catch(next)
         } else {
             next(new NotAccessibleError())
         }
