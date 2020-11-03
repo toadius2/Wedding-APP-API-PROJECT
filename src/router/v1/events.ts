@@ -87,7 +87,7 @@ export class EventsRouter extends BasicRouter {
                     return event;
                 })
             }).then(event => {
-                event.reload().then(reload => {
+                return event.reload().then(reload => {
                     res.jsonContent(reload);
                 });
             }).catch(next)
