@@ -65,15 +65,16 @@ export class EventsRouter extends BasicRouter {
 
     private static updateEvent(req: ModelRouteRequest<EventsInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
-            req.currentModel.update(req.body).then(event => {
+            const { participants, ...rest } = req.body
+            req.currentModel.update(rest).then(event => {
                 const deletions = req.currentModel.participants.map(participant => {
-                    const stillExisting = req.body.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
+                    const stillExisting = participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
                     if (!stillExisting) {
                         return participant.destroy()
                     }
                     return Promise.resolve();
                 });
-                const additions = req.body.participants.map(participant => {
+                const additions = participants.map(participant => {
                     const isNew = req.currentModel.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) == undefined
                     if (isNew) {
                         return event.createParticipant({ email: participant.email, status: 'pending' }).then(() => {
