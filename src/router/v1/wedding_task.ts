@@ -31,7 +31,7 @@ export class WeddingTaskRouter extends BasicRouter {
 
     private static newWeddingTask(req: APIRequest<WeddingTaskAttributes>, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.createWeddingTask(req.body).then(result => {
-            res.status(201).json(result);
+            res.status(201).jsonContent(result);
         }).catch(next);
     }
 

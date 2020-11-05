@@ -50,17 +50,6 @@ export class UsersRouter extends BasicRouter {
                 "language": isString,
             }
         }), UsersRouter.newUser);
-
-        this.getInternalRouter().get('/user/:userId', isAuthorized, UsersRouter.getOneUser);
-    }
-
-    private static getOneUser(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        User.findById(req.params.userId).then(user => {
-            if (!user) {
-                return next(new ResourceNotFoundError(undefined, 'User'));
-            }
-            res.json(user);
-        }).catch(next);
     }
 
     /**
@@ -70,9 +59,7 @@ export class UsersRouter extends BasicRouter {
      * @param {e.NextFunction} next
      */
     private static getUser(req: APIRequest, res: APIResponse) {
-        res.json(req.currentUser);
-        req.currentUser!.updated_at = new Date();
-        req.currentUser!.save();
+        res.jsonContent(req.currentUser);
     }
 
     /**
@@ -94,11 +81,11 @@ export class UsersRouter extends BasicRouter {
             if (user) {
                 if (user.authentication_infos && user.authentication_infos.length > 0) {
                     if (!user.authentication_infos.find(p => p.provider == 'email')) {
-                        res.json({
+                        res.jsonContent({
                             provider: user.authentication_infos[0].provider
                         })
                     } else {
-                        res.json({
+                        res.jsonContent({
                             username: user.full_name
                         })
                     }
@@ -153,7 +140,7 @@ export class UsersRouter extends BasicRouter {
                 include: [<any>'authentication_infos']
             }).then((user) => {
                 let json = user.toJSON();
-                res.status(201).json(json);
+                res.status(201).jsonContent(json);
             }).catch(next);
         };
 
@@ -169,7 +156,7 @@ export class UsersRouter extends BasicRouter {
             }).then((auth_info: AuthenticationInfoInstance) => {
                 if (auth_info) {
                     let json = auth_info.user!.toJSON();
-                    res.status(200).json(json);
+                    res.status(200).jsonContent(json);
                 } else {
                     if (!req.body.registration_fullname) {
                         return next(new InvalidParametersError(['registration_fullname'], {}));
@@ -196,7 +183,7 @@ export class UsersRouter extends BasicRouter {
         }).then((user) => {
             if (req.db_cache)
                 req.db_cache.invalidateModel('Device', req.token);
-            res.json(user);
+            res.jsonContent(user);
         }).catch(next);
     }
 
@@ -253,7 +240,7 @@ export class UsersRouter extends BasicRouter {
                         profile_image_thumbnail_url: bucket_url + s3ThumbKey,
                         profile_image_promotion_url: null
                     }).then((user) => {
-                        res.json(user);
+                        res.jsonContent(user);
                     }).catch(next);
                 });
 

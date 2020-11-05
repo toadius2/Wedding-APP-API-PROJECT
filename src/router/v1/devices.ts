@@ -83,7 +83,7 @@ export class DevicesRouter extends BasicRouter {
             if (result === 0) {
                 return next(new ResourceNotFoundError(undefined, 'Device'));
             } else {
-                res.status(200).json({ 'message': 'Device successfully deleted' });
+                res.status(200).jsonContent({ 'message': 'Device successfully deleted' });
             }
         }).catch(next);
     }
