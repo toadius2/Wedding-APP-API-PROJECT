@@ -122,7 +122,10 @@ export class UsersRouter extends BasicRouter {
             User.create(data, {
                 include: [<any>'authentication_infos']
             }).then((user) => {
-                return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([created, device]) => {
+                return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([_created, device]) => {
+                    if (device.device_data_os == 'web') {
+                        res.setAuthCookie(device.session_token!)
+                    }
                     res.status(201)
                     res.jsonContent((device as any).toJSON({ with_session: true }));
                 }).catch(next);

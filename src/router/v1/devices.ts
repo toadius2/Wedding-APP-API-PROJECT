@@ -11,8 +11,8 @@ export class DevicesRouter extends BasicRouter {
         this.getInternalRouter().delete('/devices/:device_uuid', isAuthorized, DevicesRouter.deleteDevice);
     }
 
-    public static findOrCreateDevice(device: DeviceAttributes, user: UserInstance, req: APIRequest) {
-        return Device.findOrBuild({
+    public static findOrCreateDevice(device: DeviceAttributes, user: UserInstance, req: APIRequest): Promise<[boolean, DeviceInstance]> {
+        return Promise.resolve(Device.findOrBuild({
             where: {
                 device_uuid: device.device_uuid
             },
@@ -37,7 +37,7 @@ export class DevicesRouter extends BasicRouter {
                     return [created, device]
                 }))
             })
-        })
+        }))
     }
 
     public static castUpdateDeviceBody(body: any): any {

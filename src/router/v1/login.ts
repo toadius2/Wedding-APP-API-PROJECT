@@ -119,6 +119,9 @@ export class LoginRouter extends BasicRouter {
         LoginRouter.doLogin(req.body).then(user => {
             req.currentUser = user
             return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([created, device]) => {
+                if (device.device_data_os == 'web') {
+                    res.setAuthCookie(device.session_token!)
+                }
                 res.status(created ? 201 : 200)
                 res.jsonContent((device as any).toJSON({ with_session: true }));
             }).catch(next);
