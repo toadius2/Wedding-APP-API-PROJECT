@@ -34,7 +34,7 @@ export class DevicesRouter extends BasicRouter {
                 return device.reload({
                     include: [{ model: User, as: 'User' }]
                 }).then((device => {
-                    return [created, device]
+                    return [created, device] as [boolean, DeviceInstance]
                 }))
             })
         }))
