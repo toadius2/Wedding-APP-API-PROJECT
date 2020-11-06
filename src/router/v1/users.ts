@@ -32,7 +32,14 @@ export class UsersRouter extends BasicRouter {
                     return true;
                 }
                 return 'Invalid facebook registration data'
-            }, 'registration_fullname?': isString
+            },
+            device: {
+                device_uuid: isString,
+                app_version: isString,
+                build_version: isString,
+                debug: isBoolean,
+                "language": isString,
+            }
         }), UsersRouter.newFacebookUser);
 
         this.getInternalRouter().post('/users', BasicRouter.requireKeysOfTypes({
@@ -139,8 +146,13 @@ export class UsersRouter extends BasicRouter {
             User.create(data, {
                 include: [<any>'authentication_infos']
             }).then((user) => {
-                let json = user.toJSON();
-                res.status(201).jsonContent(json);
+                return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([_created, device]) => {
+                    if (device.device_data_os == 'web') {
+                        res.setAuthCookie(device.session_token!)
+                    }
+                    res.status(201)
+                    res.jsonContent((device as any).toJSON({ with_session: true }));
+                }).catch(next);
             }).catch(next);
         };
 
