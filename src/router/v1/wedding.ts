@@ -26,7 +26,7 @@ export class WeddingRouter extends BasicRouter {
     }
 
     private static newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
-        req.currentUser!.createWedding(req.body).then(wedding => {
+        req.currentUser!.createWedding({ wedding_date: req.body.wedding_date }).then(wedding => {
             WeddingTaskTemplate.all().then(templates => {
                 templates.forEach(template => {
                     let obj = {
