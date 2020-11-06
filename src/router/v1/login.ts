@@ -60,6 +60,14 @@ export class LoginRouter extends BasicRouter {
         this.getInternalRouter().post('/verify', isAuthorized, BasicRouter.requireKeysOfTypes({
             code: isStringAndNotEmpty
         }), LoginRouter.verify)
+
+        this.getInternalRouter().post('/logout', isAuthorized, LoginRouter.logout)
+    }
+
+    static logout(req: APIRequest<LoginData>, res: APIResponse, next: express.NextFunction) {
+        req.invalidateCache()
+        res.setAuthCookie(undefined!, true)
+        res.jsonContent({})
     }
 
     static verify(req: APIRequest<{ code: string }>, res: APIResponse, next: express.NextFunction) {
