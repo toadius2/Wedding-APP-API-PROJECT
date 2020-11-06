@@ -15,6 +15,7 @@ import { resize } from "../../modules/imageconversion";
 import * as uuid from 'uuid'
 import InternalServerError from "../../error/internalservererror";
 import { DevicesRouter } from "./devices"
+import { validateGoogleToken } from "../middleware/google"
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
@@ -41,6 +42,22 @@ export class UsersRouter extends BasicRouter {
                 "language": isString,
             }
         }), UsersRouter.newFacebookUser);
+
+        this.getInternalRouter().post('/users/google', BasicRouter.requireKeysOfTypes({
+            'registration_data': (value: any): true | string => {
+                if (isString(value['google_token'])) {
+                    return true;
+                }
+                return 'Invalid google registration data'
+            },
+            device: {
+                device_uuid: isString,
+                app_version: isString,
+                build_version: isString,
+                debug: isBoolean,
+                "language": isString,
+            }
+        }), UsersRouter.newGoogleUser);
 
         this.getInternalRouter().post('/users', BasicRouter.requireKeysOfTypes({
             'registration_data': (value: any): true | string => {
@@ -141,6 +158,50 @@ export class UsersRouter extends BasicRouter {
             }]
         })
     }
+
+    private static newGoogleUser(req: APIRequest<GoogleRegistrationBodyParameters>, res: APIResponse, next: express.NextFunction) {
+        const createUser = (data: UserAttributes) => {
+            User.create(data, {
+                include: [<any>'authentication_infos']
+            }).then((user) => {
+                return DevicesRouter.findOrCreateDevice(req.body.device, user, req).then(([_created, device]) => {
+                    if (device.device_data_os == 'web') {
+                        res.setAuthCookie(device.session_token!)
+                    }
+                    res.status(201)
+                    res.jsonContent((device as any).toJSON({ with_session: true }));
+                }).catch(next);
+            }).catch(next);
+        };
+
+        const token = req.body.registration_data.google_token;
+        validateGoogleToken(token).then((data) => {
+
+            AuthenticationInfo.findOne({
+                where: {
+                    external_id: data.id,
+                    provider: "google"
+                },
+                include: [<any>'user']
+            }).then((auth_info: AuthenticationInfoInstance) => {
+                if (auth_info) {
+                    let json = auth_info.user!.toJSON();
+                    res.status(200).jsonContent(json);
+                } else {
+                    createUser({
+                        email: data.email!,
+                        full_name: data.name,
+                        authentication_infos: [<any>{
+                            provider: "google",
+                            external_id: data.id
+                        }]
+                    })
+                }
+            }).catch(next);
+
+        }).catch(next);
+    }
+
     private static newFacebookUser(req: APIRequest<FacebookRegistrationBodyParameters>, res: APIResponse, next: express.NextFunction) {
         const createUser = (data: UserAttributes) => {
             User.create(data, {
@@ -159,7 +220,7 @@ export class UsersRouter extends BasicRouter {
         const fbToken = req.body.registration_data.facebook_token;
         validateFacebookToken(fbToken).then((data) => {
 
-            req.sequelize.model("AuthenticationInfo").findOne({
+            AuthenticationInfo.findOne({
                 where: {
                     external_id: data.id,
                     provider: "facebook"
@@ -269,6 +330,10 @@ type FacebookRegistration = {
     facebook_token: string;
 }
 
+type GoogleRegistration = {
+    google_token: string;
+}
+
 /**
  * Defines the payload for email registration
  */
@@ -295,7 +360,11 @@ interface FacebookRegistrationBodyParameters {
     device: DeviceAttributes
 }
 
-
+interface GoogleRegistrationBodyParameters {
+    registration_data: GoogleRegistration;
+    registration_fullname?: string;
+    device: DeviceAttributes
+}
 
 /**
  * Defines the payload for updating a users profile picture

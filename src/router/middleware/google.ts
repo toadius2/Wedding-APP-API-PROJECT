@@ -48,7 +48,7 @@ export function validateGoogleToken(google_token: string): Promise<GoogleAuthent
 
         client.verifyIdToken({
             idToken: google_token,
-            audience: ['541760730337-3gm3i5jiejatvkqfcukeckh9cvu01frr.apps.googleusercontent.com', '541760730337-7bfphgltjesdv2cv43oktfmr44tvqedn.apps.googleusercontent.com', '541760730337-7snrmipu8ctquvec0bs4k10v49377396.apps.googleusercontent.com']
+            audience: [nconf.get('GOOGLE_CLIENT_ID')]
         }).then((loginData) => {
             if (!loginData) {
                 reject(new GenericGoogleError());

@@ -23,7 +23,9 @@
                 "BUCKET_NAME": "",
                 "BUCKET_REGION": "",
                 "AWS_REGION": "us-east-1",
-                "FORGOT_PW_URL": "",
+                "FORGOT_PW_URL": "https://develop.nuvow.com/reset-password.html",
+                "GOOGLE_CLIENT_SECRET": "oCJS5mgzugx4I4KiaJeVaQ1Q",
+                "GOOGLE_CLIENT_ID": "1093199620446-74avmb57tti6dti590j26d9tjuj75ihj.apps.googleusercontent.com",
                 "AWS_PROFILE_NAME": "nuvow",
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },
