@@ -17,6 +17,12 @@ export class WeddingRouter extends BasicRouter {
             wedding_date: isDate,
             payment_status: isString
         }), WeddingRouter.updateWedding);
+
+        this.getInternalRouter().get('/wedding', isAuthorized, hasWedding, WeddingRouter.getWedding);
+    }
+
+    private static getWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        res.jsonContent(req.currentWedding)
     }
 
     private static newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
@@ -31,7 +37,7 @@ export class WeddingRouter extends BasicRouter {
                 });
             });
             res.status(201).jsonContent(wedding);
-            return null;    // prevent promise warning (http://goo.gl/rRqMUw)
+            return null;
         }).catch(next);
     }
 
