@@ -32,7 +32,7 @@ export class UsersRouter extends BasicRouter {
                     return true;
                 }
                 return 'Invalid facebook registration data'
-            }, 'registration_fullname': isString
+            }, 'registration_fullname?': isString
         }), UsersRouter.newFacebookUser);
 
         this.getInternalRouter().post('/users', BasicRouter.requireKeysOfTypes({
@@ -163,7 +163,7 @@ export class UsersRouter extends BasicRouter {
                     }
                     createUser({
                         email: data.email!,
-                        full_name: req.body.registration_fullname,
+                        full_name: data.name || req.body.registration_fullname,
                         authentication_infos: [<any>{
                             provider: "facebook",
                             external_id: data.id
@@ -282,8 +282,7 @@ interface RegistrationBodyParameters {
  */
 interface FacebookRegistrationBodyParameters {
     registration_data: FacebookRegistration;
-    registration_username: string;
-    registration_fullname: string;
+    registration_fullname?: string;
     device: DeviceAttributes
 }
 
