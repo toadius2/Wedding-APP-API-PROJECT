@@ -170,12 +170,9 @@ export class UsersRouter extends BasicRouter {
                     let json = auth_info.user!.toJSON();
                     res.status(200).jsonContent(json);
                 } else {
-                    if (!req.body.registration_fullname) {
-                        return next(new InvalidParametersError(['registration_fullname'], {}));
-                    }
                     createUser({
                         email: data.email!,
-                        full_name: data.name || req.body.registration_fullname,
+                        full_name: data.name,
                         authentication_infos: [<any>{
                             provider: "facebook",
                             external_id: data.id
