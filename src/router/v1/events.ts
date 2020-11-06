@@ -50,7 +50,7 @@ export class EventsRouter extends BasicRouter {
         req.sequelize.transaction((t: Transaction) => {
             return req.currentWedding!.createEvent(req.body).then((event) => {
                 return Promise.all(req.body.participants.map(participant => {
-                    return event.createParticipant({ email: participant.email, status: 'pending' });
+                    return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction: t });
                 })).then(() => {
                     return event
                 })
@@ -66,31 +66,32 @@ export class EventsRouter extends BasicRouter {
     private static updateEvent(req: ModelRouteRequest<EventsInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             const { participants, ...rest } = req.body
-            req.currentModel.update(rest).then(event => {
-                const deletions = req.currentModel.participants.map(participant => {
-                    const stillExisting = participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
-                    if (!stillExisting) {
-                        return participant.destroy()
-                    }
-                    return Promise.resolve();
-                });
-                const additions = participants.map(participant => {
-                    const isNew = req.currentModel.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) == undefined
-                    if (isNew) {
-                        return event.createParticipant({ email: participant.email, status: 'pending' }).then(() => {
-                            return;// turn the promise into a void promise to not confuse TS
-                        })
-                    }
-                    return Promise.resolve();
-                });
-
-                return Promise.all([...deletions, ...additions]).then(() => {
-                    return event;
+            req.sequelize.transaction((t: Transaction) => {
+                return req.currentModel.update(rest).then(event => {
+                    const deletions = req.currentModel.participants.map(participant => {
+                        const stillExisting = participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
+                        if (!stillExisting) {
+                            return participant.destroy({ transaction: t });
+                        }
+                        return Promise.resolve();
+                    });
+                    const additions = participants.map(participant => {
+                        const isNew = req.currentModel.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) == undefined
+                        if (isNew) {
+                            return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction: t }).then(() => {
+                                return;// turn the promise into a void promise to not confuse TS
+                            })
+                        }
+                        return Promise.resolve();
+                    });
+                    return Promise.all([...deletions, ...additions]).then(() => {
+                        return event;
+                    });
+                }).then(event => {
+                    return event.reload();
                 })
             }).then(event => {
-                return event.reload().then(reload => {
-                    res.jsonContent(reload);
-                });
+                res.jsonContent(event)
             }).catch(next)
         } else {
             next(new NotAccessibleError())
