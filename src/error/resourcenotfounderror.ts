@@ -15,6 +15,7 @@ export default class ResourceNotFoundError extends BasicError {
      */
     constructor(message: string = 'Resource not found', resource_type: string) {
         super(message);
+        this.message = `${resource_type || 'Resource'} not found`
         Object.setPrototypeOf(this, ResourceNotFoundError.prototype);
         this.type = 'ResourceNotFound';
         this.resource_type = resource_type;

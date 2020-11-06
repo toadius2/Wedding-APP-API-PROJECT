@@ -180,7 +180,7 @@ export class LoginRouter extends BasicRouter {
                     res.jsonContent({ 'message': 'Reset token was sent to ' + req.body.email });
                 }).catch(next);
             } else {
-                return next(new ResourceNotFoundError(undefined, 'AuthenticationInfo'));
+                return next(new ResourceNotFoundError(undefined, 'Email'));
             }
         }).catch(next);
     }
