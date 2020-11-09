@@ -25,10 +25,10 @@ export interface SendPushFunction {
 }
 
 export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAttributes {
-    addAuthenticationInfo: Sequelize.HasManyAddAssociationMixin<AuthenticationInfo.AuthenticationInfoInstance, string>
-    getAuthenticationInfos: Sequelize.HasManyGetAssociationsMixin<AuthenticationInfo.AuthenticationInfoInstance>
-    removeAuthenticationInfo: Sequelize.HasManyRemoveAssociationMixin<AuthenticationInfo.AuthenticationInfoInstance, string>
-    createAuthenticationInfo: Sequelize.HasManyCreateAssociationMixin<AuthenticationInfo.AuthenticationInfoAttributes, AuthenticationInfo.AuthenticationInfoInstance>
+    addAuthentication_info: Sequelize.HasManyAddAssociationMixin<AuthenticationInfo.AuthenticationInfoInstance, string>
+    getAuthentication_infos: Sequelize.HasManyGetAssociationsMixin<AuthenticationInfo.AuthenticationInfoInstance>
+    removeAuthentication_info: Sequelize.HasManyRemoveAssociationMixin<AuthenticationInfo.AuthenticationInfoInstance, string>
+    createAuthentication_info: Sequelize.HasManyCreateAssociationMixin<AuthenticationInfo.AuthenticationInfoAttributes, AuthenticationInfo.AuthenticationInfoInstance>
 
     getDevices: Sequelize.HasManyGetAssociationsMixin<Device.DeviceInstance>
     sendPush: SendPushFunction

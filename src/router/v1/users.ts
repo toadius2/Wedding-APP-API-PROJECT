@@ -16,6 +16,7 @@ import * as uuid from 'uuid'
 import InternalServerError from "../../error/internalservererror";
 import { DevicesRouter } from "./devices"
 import { validateGoogleToken } from "../middleware/google"
+import * as Sequelize from 'sequelize'
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
@@ -188,13 +189,42 @@ export class UsersRouter extends BasicRouter {
                     let json = auth_info.user!.toJSON();
                     res.status(200).jsonContent(json);
                 } else {
-                    createUser({
-                        email: data.email!,
-                        full_name: data.name,
-                        authentication_infos: [<any>{
+                    if (!data.email) {
+                        return next(new InvalidParametersError(['email'], {}, 'Missing email for social login'));
+                    }
+                    return AuthenticationInfo.findOne({
+                        where: {
+                            external_id: data.email,
+                            provider: "email"
+                        },
+                        include: [<any>'user'], rejectOnEmpty: true
+                    }).then((auth_info: AuthenticationInfoInstance) => {
+                        auth_info = auth_info!;
+                        return auth_info.user.createAuthentication_info({
                             provider: "google",
                             external_id: data.id
-                        }]
+                        }).then(() => {
+                            return DevicesRouter.findOrCreateDevice(req.body.device, auth_info.user, req).then(([_created, device]) => {
+                                if (device.device_data_os == 'web') {
+                                    res.setAuthCookie(device.session_token!)
+                                }
+                                res.status(201)
+                                res.jsonContent((device as any).toJSON({ with_session: true }));
+                            }).catch(next);
+                        })
+                    }).catch(err => {
+                        if (err instanceof Sequelize.EmptyResultError) {
+                            createUser({
+                                email: data.email!,
+                                full_name: data.name,
+                                authentication_infos: [<any>{
+                                    provider: "google",
+                                    external_id: data.id
+                                }]
+                            })
+                        } else {
+                            next(err)
+                        }
                     })
                 }
             }).catch(next);

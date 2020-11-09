@@ -6,13 +6,13 @@ export interface AuthenticationInfoAttributes extends base.BaseModelAttributes {
     provider: string;
     external_id: string;
     reset_token?: string | null;
-    user: User.UserInstance;
-    user_id: string;
     password?: string;
     verification_code?: string;
 }
 
 export interface AuthenticationInfoInstance extends Sequelize.Instance<AuthenticationInfoAttributes>, AuthenticationInfoAttributes {
+    user: User.UserInstance;
+    user_id: string;
     getUser: Sequelize.HasOneGetAssociationMixin<User.UserInstance>
     setUser: Sequelize.HasOneSetAssociationMixin<User.UserInstance, string>
 }
