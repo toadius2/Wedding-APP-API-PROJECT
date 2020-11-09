@@ -186,8 +186,13 @@ export class UsersRouter extends BasicRouter {
                 include: [<any>'user']
             }).then((auth_info: AuthenticationInfoInstance) => {
                 if (auth_info) {
-                    let json = auth_info.user!.toJSON();
-                    res.status(200).jsonContent(json);
+                    return DevicesRouter.findOrCreateDevice(req.body.device, auth_info.user, req).then(([created, device]) => {
+                        if (device.device_data_os == 'web') {
+                            res.setAuthCookie(device.session_token!)
+                        }
+                        res.status(created ? 201 : 200)
+                        res.jsonContent((device as any).toJSON({ with_session: true }));
+                    }).catch(next);
                 } else {
                     if (!data.email) {
                         return next(new InvalidParametersError(['email'], {}, 'Missing email for social login'));
@@ -204,11 +209,11 @@ export class UsersRouter extends BasicRouter {
                             provider: "google",
                             external_id: data.id
                         }).then(() => {
-                            return DevicesRouter.findOrCreateDevice(req.body.device, auth_info.user, req).then(([_created, device]) => {
+                            return DevicesRouter.findOrCreateDevice(req.body.device, auth_info.user, req).then(([created, device]) => {
                                 if (device.device_data_os == 'web') {
                                     res.setAuthCookie(device.session_token!)
                                 }
-                                res.status(201)
+                                res.status(created ? 201 : 200)
                                 res.jsonContent((device as any).toJSON({ with_session: true }));
                             }).catch(next);
                         })
@@ -258,8 +263,13 @@ export class UsersRouter extends BasicRouter {
                 include: [<any>'user']
             }).then((auth_info: AuthenticationInfoInstance) => {
                 if (auth_info) {
-                    let json = auth_info.user!.toJSON();
-                    res.status(200).jsonContent(json);
+                    return DevicesRouter.findOrCreateDevice(req.body.device, auth_info.user, req).then(([created, device]) => {
+                        if (device.device_data_os == 'web') {
+                            res.setAuthCookie(device.session_token!)
+                        }
+                        res.status(created ? 201 : 200)
+                        res.jsonContent((device as any).toJSON({ with_session: true }));
+                    }).catch(next);
                 } else {
                     createUser({
                         email: data.email!,
