@@ -113,7 +113,7 @@ export class LoginRouter extends BasicRouter {
                 }
                 throw (new InvalidLoginError());
             }
-            throw (new ResourceNotFoundError(undefined, 'AuthenticationInfo'));
+            throw (new ResourceNotFoundError(undefined, 'Email'));
         }))
     }
 
@@ -240,7 +240,7 @@ export class LoginRouter extends BasicRouter {
                 });
 
             } else {
-                return next(new ResourceNotFoundError(undefined, 'AuthenticationInfo'));
+                return next(new ResourceNotFoundError(undefined, 'Reset Token'));
             }
         }).catch(next);
     }
