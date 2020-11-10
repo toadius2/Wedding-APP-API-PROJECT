@@ -29,7 +29,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
 
-    User.User.hasOne(Wedding.Wedding, { as: 'User' });
+    User.User.hasOne(Wedding.Wedding);
     Wedding.Wedding.belongsTo(User.User);
 
     Wedding.Wedding.hasMany(BudgetItem.BudgetItem, { as: 'BudgetItems' });
@@ -40,7 +40,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
-    Events.Events.hasMany(Participants.Participants, {  onDelete: 'CASCADE', as: 'participants' });
+    Events.Events.hasMany(Participants.Participants, { onDelete: 'CASCADE', as: 'participants' });
     Participants.Participants.belongsTo(Events.Events);
 
     Events.Events.addScope('defaultScope', {

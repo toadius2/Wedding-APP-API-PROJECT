@@ -36,7 +36,8 @@ export function define(sequelize: Sequelize.Sequelize): void {
         },
         payment_status: {
             type: Sequelize.ENUM(['not-paid', 'paid', 'pending']),
-            allowNull: false
+            allowNull: false,
+            defaultValue: 'not-paid'
         },
     };
     Wedding = <Sequelize.Model<WeddingInstance, WeddingAttributes>>
