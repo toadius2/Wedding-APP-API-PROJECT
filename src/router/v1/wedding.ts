@@ -3,7 +3,7 @@ import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingAttributes, WeddingTaskTemplate } from "../../model";
-import { isDate, isString } from "../middleware/validationrules";
+import { isDate } from "../middleware/validationrules";
 
 export class WeddingRouter extends BasicRouter {
 
