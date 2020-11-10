@@ -55,6 +55,7 @@ export class LoginRouter extends BasicRouter {
         this.getInternalRouter().post('/resend-verification', isAuthorized, (req: APIRequest, res: APIResponse, next) => {
             req.currentUser!.sendVerificationEmail()
             res.jsonContent({ status: 'success' })
+            return null
         })
 
         this.getInternalRouter().post('/verify', isAuthorized, BasicRouter.requireKeysOfTypes({
@@ -178,6 +179,7 @@ export class LoginRouter extends BasicRouter {
                     }
                     server.send(auth_info.user!.email, "Reset your Password", text);
                     res.jsonContent({ 'message': 'Reset token was sent to ' + req.body.email });
+                    return null
                 }).catch(next);
             } else {
                 return next(new ResourceNotFoundError(undefined, 'Email'));

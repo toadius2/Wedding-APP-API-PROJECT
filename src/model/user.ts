@@ -35,7 +35,7 @@ export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAt
 
     createWedding: Sequelize.HasManyCreateAssociationMixin<WeddingInfo.WeddingAttributes, WeddingInfo.WeddingInstance>
 
-    sendVerificationEmail: () => void
+    sendVerificationEmail: () => Promise<void>
 }
 
 export let User: Sequelize.Model<UserInstance, UserAttributes>;
@@ -80,5 +80,6 @@ export function define(sequelize: Sequelize.Sequelize): void {
         new EmailServer().send(this.email, 'Email verification', 'Your verification code: ' + this.authentication_infos![0].verification_code).catch(err => {
             logger.error('Error sending verifcation email', err, 'User-sendVerifcationEmail')
         })
+        return null
     }
 }
