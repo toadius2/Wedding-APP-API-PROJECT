@@ -11,11 +11,9 @@ export class WeddingRouter extends BasicRouter {
         super();
         this.getInternalRouter().post('/wedding', isAuthorized, BasicRouter.requireKeysOfTypes({
             wedding_date: isDate,
-            payment_status: isString
         }), WeddingRouter.newWedding);
         this.getInternalRouter().put('/wedding', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             wedding_date: isDate,
-            payment_status: isString
         }), WeddingRouter.updateWedding);
 
         this.getInternalRouter().get('/wedding', isAuthorized, hasWedding, WeddingRouter.getWedding);

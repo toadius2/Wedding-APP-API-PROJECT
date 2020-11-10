@@ -8,7 +8,7 @@ import { WeddingTimelineAttributes, WeddingTimelineInstance } from "./wedding_ti
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
     wedding_date: Date,
-    payment_status?: String,
+    payment_status?: 'not-paid' | 'paid' | 'pending'
 }
 
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
