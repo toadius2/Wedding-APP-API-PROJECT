@@ -18,6 +18,7 @@ export function hasWedding(req: APIRequest, res: APIResponse, next: express.Next
         if (wedding != null) {
             req.currentWedding = wedding;
             next();
+            return null
         } else {
             next(new NoWeddingFoundError());
         }

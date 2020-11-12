@@ -2,7 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface BudgetItemAttributes extends base.BaseModelAttributes {
-    amount: Number;
+    amount: number;
     name: string;
     color?: string;
 }

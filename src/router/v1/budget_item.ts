@@ -5,7 +5,7 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { BudgetItem, BudgetItemAttributes, BudgetItemInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
-import { isString } from "../middleware/validationrules";
+import { isNumber, isString } from "../middleware/validationrules";
 
 export class BudgetItemRouter extends BasicRouter {
 
@@ -14,17 +14,19 @@ export class BudgetItemRouter extends BasicRouter {
         this.getInternalRouter().get('/budget-item', isAuthorized, hasWedding, BudgetItemRouter.getItems);
         this.getInternalRouter().post('/budget-item', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             name: isString,
-            color: isString
+            color: isString,
+            amount: isNumber
         }), BudgetItemRouter.newBudgetItem);
         this.getInternalRouter().put('/budget-item/:budget_item_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             name: isString,
-            color: isString
+            color: isString,
+            amount: isNumber
         }), BasicRouter.populateModel(BudgetItem, 'budget_item_id'), BudgetItemRouter.updateBudgetItem);
         this.getInternalRouter().delete('/budget-item/:budget_item_id', isAuthorized, hasWedding, BasicRouter.populateModel(BudgetItem, 'budget_item_id'), BudgetItemRouter.deleteItem);
     }
 
     private static getItems(req: APIRequest, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.getBudgetItem().then(result => {
+        req.currentWedding!.getBudgetItems().then(result => {
             res.jsonContent(result);
         }).catch(next);
     }

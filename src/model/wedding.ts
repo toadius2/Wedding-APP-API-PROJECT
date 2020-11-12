@@ -12,7 +12,7 @@ export interface WeddingAttributes extends base.BaseModelAttributes {
 }
 
 export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, WeddingAttributes {
-    getBudgetItem: Sequelize.HasManyGetAssociationsMixin<BudgetItemInstance>
+    getBudgetItems: Sequelize.HasManyGetAssociationsMixin<BudgetItemInstance>
     createBudgetItem: Sequelize.HasManyCreateAssociationMixin<BudgetItemAttributes, BudgetItemInstance>,
 
     createEvent: Sequelize.HasManyCreateAssociationMixin<EventsAttributes, EventsInstance>,

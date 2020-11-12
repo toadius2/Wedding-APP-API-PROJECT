@@ -172,7 +172,8 @@ export class BasicRouter {
             }).then((foundmodel) => {
                 if (foundmodel) {
                     req.currentModel = foundmodel;
-                    return next();
+                    next();
+                    return null
                 } else {
                     return next(new ResourceNotFoundError(model_name() + ' not found', model_name()));
                 }
