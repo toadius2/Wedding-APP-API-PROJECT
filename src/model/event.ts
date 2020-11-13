@@ -1,18 +1,19 @@
 import * as base from "./base"
 import * as Sequelize from "sequelize"
 import { EventParticipantAttributes, EventParticipantInstance } from "./participant";
-
+import * as moment from 'moment'
 
 export interface EventAttributes extends base.BaseModelAttributes {
     title: string;
     location?: string;
     notes?: string;
     date: Date;
-    duration: Number;
+    duration: number;
     color?: string;
 }
 
 export interface EventInstance extends Sequelize.Instance<EventAttributes>, EventAttributes {
+    readonly end_date: Date
     wedding_id: string;
     participants: Array<EventParticipantInstance>
 
@@ -39,6 +40,12 @@ export function define(sequelize: Sequelize.Sequelize): void {
         date: {
             type: Sequelize.DATE(),
             allowNull: false
+        },
+        end_date: {
+            type: Sequelize.VIRTUAL,
+            get: function (this: EventInstance) {
+                return moment(this.date).add(this.duration, 'minutes')
+            }
         },
         duration: {
             type: Sequelize.INTEGER(),
