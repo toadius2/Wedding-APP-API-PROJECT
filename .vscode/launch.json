@@ -27,6 +27,7 @@
                 "GOOGLE_CLIENT_SECRET": "oCJS5mgzugx4I4KiaJeVaQ1Q",
                 "GOOGLE_CLIENT_ID": "1093199620446-74avmb57tti6dti590j26d9tjuj75ihj.apps.googleusercontent.com",
                 "AWS_PROFILE_NAME": "nuvow",
+                "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },
             "outputCapture": "std",
@@ -56,6 +57,7 @@
                 "AWS_REGION": "us-east-1",
                 "FORGOT_PW_URL": "",
                 "AWS_PROFILE_NAME": "nuvow",
+                "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },
             "outputCapture": "std",
@@ -85,6 +87,7 @@
                 "AWS_REGION": "us-east-1",
                 "FORGOT_PW_URL": "",
                 "AWS_PROFILE_NAME": "nuvow",
+                "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },
             "outputCapture": "std",

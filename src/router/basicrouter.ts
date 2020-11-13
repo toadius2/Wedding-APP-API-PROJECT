@@ -48,6 +48,20 @@ export class BasicRouter {
      */
     constructor() {
         this.internalRouter = express.Router();
+        const asyncMiddleware = (fn) =>
+            (req, res, next) => {
+                Promise.resolve(fn(req, res, next))
+                    .catch(next);
+            };
+        ['get', 'post', 'put', 'delete', 'options', 'head', 'all'].forEach(verb => {
+            const _impl = this.internalRouter[verb].bind(this.internalRouter);
+            this.internalRouter[verb] = function (path: string, ...handler: any[]) {
+                handler = handler.map(h => {
+                    return asyncMiddleware(h)
+                })
+                _impl(path, handler)
+            }
+        })
     }
 
     /**

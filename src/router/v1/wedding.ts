@@ -23,7 +23,13 @@ export class WeddingRouter extends BasicRouter {
         res.jsonContent(req.currentWedding)
     }
 
-    private static newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
+    private static async newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
+        const existing = await req.currentUser!.getWedding()
+        if (existing) {
+            const wedding = await existing.update({ wedding_date: req.body.wedding_date })
+            res.jsonContent(wedding);
+            return
+        }
         req.currentUser!.createWedding({ wedding_date: req.body.wedding_date }).then(wedding => {
             WeddingTaskTemplate.all().then(templates => {
                 templates.forEach(template => {

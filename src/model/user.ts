@@ -33,8 +33,8 @@ export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAt
     getDevices: Sequelize.HasManyGetAssociationsMixin<Device.DeviceInstance>
     sendPush: SendPushFunction
 
-    createWedding: Sequelize.HasManyCreateAssociationMixin<WeddingInfo.WeddingAttributes, WeddingInfo.WeddingInstance>
-
+    createWedding: Sequelize.HasManyCreateAssociationMixin<WeddingInfo.WeddingAttributes, WeddingInfo.WeddingInstance> // use hasmany as wrong ts for has one
+    getWedding: Sequelize.HasOneGetAssociationMixin<WeddingInfo.WeddingInstance>
     sendVerificationEmail: () => Promise<void>
 }
 
