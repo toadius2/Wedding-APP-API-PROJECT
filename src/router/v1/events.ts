@@ -49,10 +49,10 @@ export class EventsRouter extends BasicRouter {
     }
 
     private static newEvent(req: APIRequest<EventRequest>, res: APIResponse, next: express.NextFunction) {
-        req.sequelize.transaction((t: Transaction) => {
-            return req.currentWedding!.createEvent(req.body).then((event) => {
+        req.sequelize.transaction((transaction: Transaction) => {
+            return req.currentWedding!.createEvent(req.body, { transaction }).then((event) => {
                 return Promise.all(req.body.participants.map(participant => {
-                    return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction: t });
+                    return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction });
                 })).then(() => {
                     return event
                 })
@@ -68,19 +68,19 @@ export class EventsRouter extends BasicRouter {
     private static updateEvent(req: ModelRouteRequest<EventInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             const { participants, ...rest } = req.body
-            req.sequelize.transaction((t: Transaction) => {
-                return req.currentModel.update(rest).then(event => {
+            req.sequelize.transaction((transaction: Transaction) => {
+                return req.currentModel.update(rest, { transaction }).then(event => {
                     const deletions = req.currentModel.participants.map(participant => {
                         const stillExisting = participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) != undefined
                         if (!stillExisting) {
-                            return participant.destroy({ transaction: t });
+                            return participant.destroy({ transaction });
                         }
                         return Promise.resolve();
                     });
                     const additions = participants.map(participant => {
                         const isNew = req.currentModel.participants.find(({ email }) => email.toLowerCase() === participant.email.toLowerCase()) == undefined
                         if (isNew) {
-                            return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction: t }).then(() => {
+                            return event.createParticipant({ email: participant.email, status: 'pending' }, { transaction }).then(() => {
                                 return;// turn the promise into a void promise to not confuse TS
                             })
                         }
@@ -89,9 +89,9 @@ export class EventsRouter extends BasicRouter {
                     return Promise.all([...deletions, ...additions]).then(() => {
                         return event;
                     });
-                }).then(event => {
-                    return event.reload();
                 })
+            }).then(event => {
+                return event.reload();
             }).then(event => {
                 res.jsonContent(event)
             }).catch(next)
