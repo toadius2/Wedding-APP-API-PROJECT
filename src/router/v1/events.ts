@@ -2,18 +2,20 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { Events, EventsAttributes, EventsInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
 import { isDate, isString, isNumber, isArray, parallelValidateBlock } from "../middleware/validationrules";
 import * as EmailValidator from 'email-validator';
 import { Transaction } from "sequelize";
+import { EventAttributes, EventInstance, Event } from "../../model/event";
 
 const EventMiddleware = BasicRouter.requireKeysOfTypes({
-    name: isString,
+    title: isString,
     date: isDate,
     duration: isNumber,
     'color?': isString,
+    'location?': isString,
+    'notes?': isString,
     participants: parallelValidateBlock([isArray, (vaule: Array<{ email: string }>) => {
         return vaule.every(item => {
             return EmailValidator.validate(item.email)
@@ -21,7 +23,7 @@ const EventMiddleware = BasicRouter.requireKeysOfTypes({
     }])
 })
 
-interface EventRequest extends EventsAttributes {
+interface EventRequest extends EventAttributes {
     participants: Array<{ email: string }>
 }
 
@@ -30,10 +32,10 @@ export class EventsRouter extends BasicRouter {
     constructor() {
         super();
         this.getInternalRouter().get('/events', isAuthorized, hasWedding, EventsRouter.getEvents);
-        this.getInternalRouter().get('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.getEvent);
+        this.getInternalRouter().get('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Event, 'event_id'), EventsRouter.getEvent);
         this.getInternalRouter().post('/events', isAuthorized, hasWedding, EventMiddleware, EventsRouter.newEvent);
-        this.getInternalRouter().put('/events/:event_id', isAuthorized, hasWedding, EventMiddleware, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.updateEvent);
-        this.getInternalRouter().delete('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Events, 'event_id'), EventsRouter.deleteEvent);
+        this.getInternalRouter().put('/events/:event_id', isAuthorized, hasWedding, EventMiddleware, BasicRouter.populateModel(Event, 'event_id'), EventsRouter.updateEvent);
+        this.getInternalRouter().delete('/events/:event_id', isAuthorized, hasWedding, BasicRouter.populateModel(Event, 'event_id'), EventsRouter.deleteEvent);
     }
 
     private static getEvents(req: APIRequest, res: APIResponse, next: express.NextFunction) {
@@ -42,7 +44,7 @@ export class EventsRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static getEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
+    private static getEvent(req: ModelRouteRequest<EventInstance>, res: APIResponse, next: express.NextFunction) {
         res.jsonContent(req.currentModel);
     }
 
@@ -63,7 +65,7 @@ export class EventsRouter extends BasicRouter {
 
     }
 
-    private static updateEvent(req: ModelRouteRequest<EventsInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
+    private static updateEvent(req: ModelRouteRequest<EventInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             const { participants, ...rest } = req.body
             req.sequelize.transaction((t: Transaction) => {
@@ -98,7 +100,7 @@ export class EventsRouter extends BasicRouter {
         }
     }
 
-    private static deleteEvent(req: ModelRouteRequest<EventsInstance>, res: APIResponse, next: express.NextFunction) {
+    private static deleteEvent(req: ModelRouteRequest<EventInstance>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.destroy().then(result => {
                 res.jsonContent({ 'message': 'Event successfully deleted' });

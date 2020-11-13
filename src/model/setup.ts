@@ -1,8 +1,8 @@
 import * as Device from "./device"
 import * as AuthenticationInfo from "./authentication_info"
 import * as Wedding from "./wedding"
-import * as Participants from "./participants"
-import * as Events from "./events"
+import * as Participants from "./participant"
+import * as Event from "./event"
 import * as BudgetItem from "./budget_item"
 import * as User from "./user"
 import * as Sequelize from "sequelize"
@@ -21,7 +21,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.define(s);
     WeddingTask.define(s);
     BudgetItem.define(s);
-    Events.define(s);
+    Event.define(s);
     Participants.define(s);
     WeddingTaskTemplate.define(s);
     WeddingTimeline.define(s);
@@ -34,18 +34,18 @@ export default function setup(s: Sequelize.Sequelize): void {
 
     Wedding.Wedding.hasMany(BudgetItem.BudgetItem, { as: 'BudgetItems' });
     Wedding.Wedding.hasMany(WeddingTask.WeddingTask, { as: 'WeddingTask' });
-    Wedding.Wedding.hasMany(Events.Events, { as: 'Events' });
+    Wedding.Wedding.hasMany(Event.Event, { as: 'Events' });
     Wedding.Wedding.hasMany(WeddingTimeline.WeddingTimeline, { as: 'WeddingTimeline' });
 
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
-    Events.Events.hasMany(Participants.Participants, { onDelete: 'CASCADE', as: 'participants' });
-    Participants.Participants.belongsTo(Events.Events);
+    Event.Event.hasMany(Participants.EventParticipant, { onDelete: 'CASCADE', as: 'participants' });
+    Participants.EventParticipant.belongsTo(Event.Event);
 
-    Events.Events.addScope('defaultScope', {
+    Event.Event.addScope('defaultScope', {
         include: [{
-            model: Participants.Participants,
+            model: Participants.EventParticipant,
             as: 'participants'
         }]
     }, { override: true });

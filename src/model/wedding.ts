@@ -2,8 +2,8 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 import { BudgetItemAttributes, BudgetItemInstance } from "./budget_item";
 import { WeddingTaskAttributes, WeddingTaskInstance } from "./wedding_task";
-import { EventsAttributes, EventsInstance } from "./events";
 import { WeddingTimelineAttributes, WeddingTimelineInstance } from "./wedding_timeline";
+import { EventAttributes, EventInstance } from "./event";
 
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
@@ -15,9 +15,9 @@ export interface WeddingInstance extends Sequelize.Instance<WeddingAttributes>, 
     getBudgetItems: Sequelize.HasManyGetAssociationsMixin<BudgetItemInstance>
     createBudgetItem: Sequelize.HasManyCreateAssociationMixin<BudgetItemAttributes, BudgetItemInstance>,
 
-    createEvent: Sequelize.HasManyCreateAssociationMixin<EventsAttributes, EventsInstance>,
-    getEvents: Sequelize.HasManyGetAssociationsMixin<EventsInstance>
-    removeEvent: Sequelize.HasManyRemoveAssociationMixin<EventsInstance, string>
+    createEvent: Sequelize.HasManyCreateAssociationMixin<EventAttributes, EventInstance>,
+    getEvents: Sequelize.HasManyGetAssociationsMixin<EventInstance>
+    removeEvent: Sequelize.HasManyRemoveAssociationMixin<EventInstance, string>
 
     getWeddingTask: Sequelize.HasManyGetAssociationsMixin<WeddingTaskInstance>
     createWeddingTask: Sequelize.HasManyCreateAssociationMixin<WeddingTaskAttributes, WeddingTaskInstance>
