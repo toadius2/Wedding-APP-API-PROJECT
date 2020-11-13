@@ -58,11 +58,10 @@ export class EventsRouter extends BasicRouter {
                 })
             });
         }).then(event => {
-            event.reload().then(reload => {
+            return event.reload().then(reload => {
                 res.jsonContent(reload);
             });
         }).catch(next);
-
     }
 
     private static updateEvent(req: ModelRouteRequest<EventInstance, EventRequest>, res: APIResponse, next: express.NextFunction) {
