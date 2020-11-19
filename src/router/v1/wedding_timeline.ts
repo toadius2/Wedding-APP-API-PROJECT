@@ -14,12 +14,12 @@ export class WeddingTimelineRouter extends BasicRouter {
         super();
         this.getInternalRouter().get('/wedding-timeline', isAuthorized, hasWedding, WeddingTimelineRouter.getWeddingTimeline);
         this.getInternalRouter().post('/wedding-timeline', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
-            title: isString,
-            time: isDate
+            name: isString,
+            date: isDate
         }), WeddingTimelineRouter.newWeddingTimeline);
         this.getInternalRouter().put('/wedding-timeline/:wedding_timeline_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
-            title: isString,
-            time: isDate
+            name: isString,
+            date: isDate
         }), BasicRouter.populateModel(WeddingTimeline, 'wedding_timeline_id'), WeddingTimelineRouter.updateWeddingTimeline);
         this.getInternalRouter().delete('/wedding-timeline/:wedding_timeline_id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTimeline, 'wedding_timeline_id'), WeddingTimelineRouter.deleteWeddingTimeline);
     }
@@ -49,7 +49,7 @@ export class WeddingTimelineRouter extends BasicRouter {
 
     private static deleteWeddingTimeline(req: ModelRouteRequest<WeddingTimelineInstance>, res: APIResponse, next: express.NextFunction) {
         if (req.currentWedding!.id === req.currentWedding!.id) {
-            req.currentModel.destroy().then(result => {
+            req.currentModel.destroy().then(() => {
                 res.jsonContent({ 'message': 'Wedding Task successfully deleted' });
             }).catch(next);
         } else {

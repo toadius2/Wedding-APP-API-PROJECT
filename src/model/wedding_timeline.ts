@@ -2,8 +2,8 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 
 export interface WeddingTimelineAttributes extends base.BaseModelAttributes {
-    title: string;
-    time: Date;
+    name: string;
+    date: Date;
 }
 
 export interface WeddingTimelineInstance extends Sequelize.Instance<WeddingTimelineAttributes>, WeddingTimelineAttributes {
@@ -21,15 +21,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         date: {
             type: Sequelize.DATE(),
             allowNull: false
-        },
-        duration: {
-            type: Sequelize.INTEGER(),
-            allowNull: false
-        },
-        color: {
-            type: Sequelize.STRING(),
-            allowNull: true
-        },
+        }
     };
     WeddingTimeline = <Sequelize.Model<WeddingTimelineInstance, WeddingTimelineAttributes>>
         sequelize.define('WeddingTimeline', Object.assign({}, base.defaultColums(), definition) as any, {
