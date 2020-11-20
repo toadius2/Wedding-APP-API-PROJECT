@@ -4,6 +4,7 @@ import * as Sequelize from "sequelize"
 export interface WeddingTimelineAttributes extends base.BaseModelAttributes {
     name: string;
     date: Date;
+    description?: string
 }
 
 export interface WeddingTimelineInstance extends Sequelize.Instance<WeddingTimelineAttributes>, WeddingTimelineAttributes {
@@ -18,6 +19,10 @@ export function define(sequelize: Sequelize.Sequelize): void {
             type: Sequelize.STRING(),
             allowNull: false,
         },
+        description: {
+            type: Sequelize.STRING(),
+            allowNull: true,
+        },
         date: {
             type: Sequelize.DATE(),
             allowNull: false
@@ -26,7 +31,9 @@ export function define(sequelize: Sequelize.Sequelize): void {
     WeddingTimeline = <Sequelize.Model<WeddingTimelineInstance, WeddingTimelineAttributes>>
         sequelize.define('WeddingTimeline', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
-            underscored: true
+            underscored: true,
+            charset: 'utf8',
+            collate: 'utf8_unicode_ci'
         });
     (<any>WeddingTimeline).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());

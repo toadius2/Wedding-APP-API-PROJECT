@@ -27,7 +27,9 @@ export function define(sequelize: Sequelize.Sequelize): void {
     WeddingTask = <Sequelize.Model<WeddingTaskInstance, WeddingTaskAttributes>>
         sequelize.define('WeddingTask', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
-            underscored: true
+            underscored: true,
+            charset: 'utf8',
+            collate: 'utf8_unicode_ci'
         });
     (<any>WeddingTask).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());

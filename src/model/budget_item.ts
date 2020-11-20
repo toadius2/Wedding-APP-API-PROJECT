@@ -31,7 +31,9 @@ export function define(sequelize: Sequelize.Sequelize): void {
     BudgetItem = <Sequelize.Model<BudgetItemInstance, BudgetItemAttributes>>
         sequelize.define('BudgetItem', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
-            underscored: true
+            underscored: true,
+            charset: 'utf8',
+            collate: 'utf8_unicode_ci'
         });
     (<any>BudgetItem).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());
