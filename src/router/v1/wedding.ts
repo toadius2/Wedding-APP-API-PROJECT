@@ -3,7 +3,7 @@ import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingAttributes, WeddingTaskTemplate } from "../../model";
-import { isDate } from "../middleware/validationrules";
+import { isDate, isString } from "../middleware/validationrules";
 
 export class WeddingRouter extends BasicRouter {
 
@@ -11,9 +11,11 @@ export class WeddingRouter extends BasicRouter {
         super();
         this.getInternalRouter().post('/wedding', isAuthorized, BasicRouter.requireKeysOfTypes({
             wedding_date: isDate,
+            name: isString
         }), WeddingRouter.newWedding);
         this.getInternalRouter().put('/wedding', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             wedding_date: isDate,
+            name: isString
         }), WeddingRouter.updateWedding);
 
         this.getInternalRouter().get('/wedding', isAuthorized, hasWedding, WeddingRouter.getWedding);
@@ -26,11 +28,11 @@ export class WeddingRouter extends BasicRouter {
     private static async newWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
         const existing = await req.currentUser!.getWedding()
         if (existing) {
-            const wedding = await existing.update({ wedding_date: req.body.wedding_date })
+            const wedding = await existing.update({ wedding_date: req.body.wedding_date, name: req.body.name })
             res.jsonContent(wedding);
             return
         }
-        req.currentUser!.createWedding({ wedding_date: req.body.wedding_date }).then(wedding => {
+        req.currentUser!.createWedding({ wedding_date: req.body.wedding_date, name: req.body.name }).then(wedding => {
             WeddingTaskTemplate.all().then(templates => {
                 templates.forEach(template => {
                     let obj = {
@@ -45,9 +47,10 @@ export class WeddingRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static updateWedding(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+    private static updateWedding(req: APIRequest<WeddingAttributes>, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.update({
             wedding_date: req.body.wedding_date,
+            name: req.body.name
         }).then(wedding => {
             res.jsonContent(wedding);
         }).catch(next);

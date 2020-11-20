@@ -7,7 +7,8 @@ import { EventAttributes, EventInstance } from "./event";
 
 
 export interface WeddingAttributes extends base.BaseModelAttributes {
-    wedding_date: Date,
+    wedding_date: Date
+    name: string
     payment_status?: 'not-paid' | 'paid' | 'pending'
 }
 
@@ -32,7 +33,11 @@ export function define(sequelize: Sequelize.Sequelize): void {
     let definition: Sequelize.DefineAttributes = {
         wedding_date: {
             type: Sequelize.DATE(),
-            allowNull: true
+            allowNull: false
+        },
+        name: {
+            type: Sequelize.STRING(),
+            allowNull: false
         },
         payment_status: {
             type: Sequelize.ENUM(['not-paid', 'paid', 'pending']),
@@ -43,7 +48,9 @@ export function define(sequelize: Sequelize.Sequelize): void {
     Wedding = <Sequelize.Model<WeddingInstance, WeddingAttributes>>
         sequelize.define('Wedding', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
-            underscored: true
+            underscored: true,
+            charset: 'utf8',
+            collate: 'utf8_unicode_ci'
         });
     (<any>Wedding).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());
