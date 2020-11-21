@@ -2,7 +2,7 @@ import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import { hasWedding } from "../middleware/userHasWedding"
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
-import { WeddingAttributes, WeddingTaskTemplate } from "../../model";
+import { WeddingAttributes } from "../../model";
 import { isDate, isString } from "../middleware/validationrules";
 
 export class WeddingRouter extends BasicRouter {
