@@ -5,22 +5,36 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError } from "../../error";
-import { isString, isBoolean } from "../middleware/validationrules";
+import { isString, isBoolean, isDate, isArrayOfType } from "../middleware/validationrules";
+import { WeddingTaskTag } from "../../model/wedding_task_tag";
 
 export class WeddingTaskRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().get('/wedding-task', isAuthorized, hasWedding, WeddingTaskRouter.getWeddingTask);
+        this.getInternalRouter().get('/wedding-task-tags', isAuthorized, WeddingTaskRouter.getWeddingTaskTags);
         this.getInternalRouter().post('/wedding-task', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             name: isString,
-            completed: isBoolean
+            'detail?': isString,
+            date: isDate,
+            'completed?': isBoolean,
+            'tags?': isArrayOfType('string')
         }), WeddingTaskRouter.newWeddingTask);
         this.getInternalRouter().put('/wedding-task/:wedding_task_id', isAuthorized, hasWedding, BasicRouter.requireKeysOfTypes({
             name: isString,
-            completed: isBoolean
+            'detail?': isString,
+            date: isDate,
+            'completed?': isBoolean,
+            'tags?': isArrayOfType('string')
         }), BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.updateWeddingTask);
-        this.getInternalRouter().delete('/wedding-task', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.deleteWeddingTask);
+        this.getInternalRouter().delete('/wedding-task/:wedding_task_id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingTask, 'wedding_task_id'), WeddingTaskRouter.deleteWeddingTask);
+    }
+
+    private static getWeddingTaskTags(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        WeddingTaskTag.findAll().then(result => {
+            res.jsonContent(result);
+        }).catch(next);
     }
 
     private static getWeddingTask(req: APIRequest, res: APIResponse, next: express.NextFunction) {
@@ -29,8 +43,12 @@ export class WeddingTaskRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static newWeddingTask(req: APIRequest<WeddingTaskAttributes>, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.createWeddingTask(req.body).then(result => {
+    private static newWeddingTask(req: APIRequest<WeddingTaskAttributes & { tags?: string[] }>, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createWeddingTask(req.body).then(async result => {
+            if (req.body.tags) {
+                await result.setTags(req.body.tags)
+                result = await result.reload()
+            }
             res.status(201).jsonContent(result);
         }).catch(next);
     }
@@ -38,7 +56,11 @@ export class WeddingTaskRouter extends BasicRouter {
     private static updateWeddingTask(req: ModelRouteRequest<WeddingTaskInstance>, res: APIResponse, next: express.NextFunction) {
         let params: WeddingTaskAttributes = req.body;
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
-            req.currentModel.update(params).then(result => {
+            req.currentModel.update(params).then(async result => {
+                if (req.body.tags) {
+                    await result.setTags(req.body.tags)
+                    result = await result.reload()
+                }
                 res.jsonContent(result);
             }).catch(next);
         } else {

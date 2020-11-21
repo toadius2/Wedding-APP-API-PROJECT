@@ -60,8 +60,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         sequelize.define('Event', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
             underscored: true,
-            charset: 'utf8',
-            collate: 'utf8_unicode_ci'
+
         });
     (<any>Event).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());

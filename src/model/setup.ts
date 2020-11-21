@@ -10,6 +10,7 @@ import { UserInstance } from "./user";
 import * as WeddingTask from "./wedding_task"
 import * as WeddingTaskTemplate from "./wedding_task_template"
 import * as WeddingTimeline from "./wedding_timeline"
+import * as WeddingTaskTag from "./wedding_task_tag"
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -25,6 +26,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     Participants.define(s);
     WeddingTaskTemplate.define(s);
     WeddingTimeline.define(s);
+    WeddingTaskTag.define(s);
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
@@ -37,6 +39,8 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.Wedding.hasMany(Event.Event, { as: 'Events' });
     Wedding.Wedding.hasMany(WeddingTimeline.WeddingTimeline, { as: 'WeddingTimeline' });
 
+    WeddingTask.WeddingTask.belongsToMany(WeddingTaskTag.WeddingTaskTag, { through: 'WeddingTaskTagAssociation', as: { singular: 'tag', plural: 'tags' } })
+
     User.User.hasMany(Device.Device, { onDelete: 'CASCADE', as: 'devices' });
     Device.Device.belongsTo(User.User);
 
@@ -47,6 +51,13 @@ export default function setup(s: Sequelize.Sequelize): void {
         include: [{
             model: Participants.EventParticipant,
             as: 'participants'
+        }]
+    }, { override: true });
+
+    WeddingTask.WeddingTask.addScope('defaultScope', {
+        include: [{
+            model: WeddingTaskTag.WeddingTaskTag,
+            as: 'tags'
         }]
     }, { override: true });
 

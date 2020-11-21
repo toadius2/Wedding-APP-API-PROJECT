@@ -33,15 +33,6 @@ export class WeddingRouter extends BasicRouter {
             return
         }
         req.currentUser!.createWedding({ wedding_date: req.body.wedding_date, name: req.body.name }).then(wedding => {
-            WeddingTaskTemplate.all().then(templates => {
-                templates.forEach(template => {
-                    let obj = {
-                        'name': template.name,
-                        'completed': false
-                    }
-                    wedding.createWeddingTask(obj);
-                });
-            });
             res.status(201).jsonContent(wedding);
             return null;
         }).catch(next);
