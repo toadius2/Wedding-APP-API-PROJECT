@@ -4,9 +4,10 @@ import { hasWedding } from "../middleware/userHasWedding";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { WeddingTask, WeddingTaskAttributes, WeddingTaskInstance } from "../../model";
 import { ModelRouteRequest } from "../basicrouter";
-import { NotAccessibleError } from "../../error";
+import { NotAccessibleError, ResourceNotFoundError } from "../../error";
 import { isString, isBoolean, isDate, isArrayOfType } from "../middleware/validationrules";
 import { WeddingTaskTag } from "../../model/wedding_task_tag";
+import { Transaction } from "sequelize";
 
 export class WeddingTaskRouter extends BasicRouter {
 
@@ -44,23 +45,34 @@ export class WeddingTaskRouter extends BasicRouter {
     }
 
     private static newWeddingTask(req: APIRequest<WeddingTaskAttributes & { tags?: string[] }>, res: APIResponse, next: express.NextFunction) {
-        req.currentWedding!.createWeddingTask(req.body).then(async result => {
-            if (req.body.tags) {
-                await result.setTags(req.body.tags)
-                result = await result.reload()
-            }
+        req.sequelize.transaction((transaction: Transaction) => {
+            return req.currentWedding!.createWeddingTask(req.body, { transaction }).then(async result => {
+                if (req.body.tags) {
+                    await result.setTags(req.body.tags, { transaction }).catch(err => {
+                        throw new ResourceNotFoundError(undefined, 'Tag')
+                    })
+                }
+                return result
+            })
+        }).then(async (result) => {
+            result = await result.reload()
             res.status(201).jsonContent(result);
         }).catch(next);
     }
 
-    private static updateWeddingTask(req: ModelRouteRequest<WeddingTaskInstance>, res: APIResponse, next: express.NextFunction) {
-        let params: WeddingTaskAttributes = req.body;
+    private static updateWeddingTask(req: ModelRouteRequest<WeddingTaskInstance & { tags?: string[] }>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
-            req.currentModel.update(params).then(async result => {
-                if (req.body.tags) {
-                    await result.setTags(req.body.tags)
-                    result = await result.reload()
-                }
+            req.sequelize.transaction((transaction: Transaction) => {
+                return req.currentModel.update(req.body, { transaction }).then(async (result) => {
+                    if (req.body.tags) {
+                        await result.setTags(req.body.tags, { transaction }).catch(err => {
+                            throw new ResourceNotFoundError(undefined, 'Tag')
+                        })
+                    }
+                    return result
+                })
+            }).then(async result => {
+                result = await result.reload()
                 res.jsonContent(result);
             }).catch(next);
         } else {
