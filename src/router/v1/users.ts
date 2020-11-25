@@ -10,13 +10,14 @@ import * as multer from "multer"
 import { S3 } from "aws-sdk"
 import * as async from "async"
 import * as nconf from "nconf"
-import { ResourceNotFoundError, InvalidParametersError } from '../../error'
+import { ResourceNotFoundError, InvalidParametersError, ResourceAlreadyExists } from '../../error'
 import { resize } from "../../modules/imageconversion";
 import * as uuid from 'uuid'
 import InternalServerError from "../../error/internalservererror";
 import { DevicesRouter } from "./devices"
 import { validateGoogleToken } from "../middleware/google"
 import * as Sequelize from 'sequelize'
+import { delete } from "request"
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
@@ -25,6 +26,18 @@ export class UsersRouter extends BasicRouter {
         super();
         this.getInternalRouter().get('/users', UsersRouter.getUserByEmail);
         this.getInternalRouter().get('/users/me', isAuthorized, UsersRouter.getUser);
+        this.getInternalRouter().put('/users/me', isAuthorized, BasicRouter.requireKeysOfTypes({
+            'email?': (value: any): true | string => {
+                if (EmailValidator.validate(value)) {
+                    return true
+                }
+                return 'Invalid email provided'
+            },
+            'full_name?': isString,
+            'username?': isString,
+            'phone?': isString
+        }), UsersRouter.updateUser);
+
         this.getInternalRouter().post('/users/me/picture', isAuthorized, multer({ dest: '.uploads/' }).single('image'), UsersRouter.processProfilePicture)
         this.getInternalRouter().delete('/users/me/picture', isAuthorized, UsersRouter.removeProfilePicture)
 
@@ -75,6 +88,35 @@ export class UsersRouter extends BasicRouter {
                 "language": isString,
             }
         }), UsersRouter.newUser);
+    }
+
+    private static async updateUser(req: APIRequest<UserAttributes>, res: APIResponse, next: APINextFunction) {
+        const didUpdateEmail = req.body.email && req.body.email.toLowerCase() != req.currentUser!.email.toLowerCase()
+        if (didUpdateEmail) {
+            const auth_infos_c = await AuthenticationInfo.count({ where: { provider: 'email', external_id: req.body.email } })
+            const users_s = await User.count({ where: { email: req.body.email } })
+            if (auth_infos_c > 0 || users_s > 0) {
+                return next(new ResourceAlreadyExists('Email already taken'))
+            }
+        }
+        if (didUpdateEmail) {
+            req.body.verified = false
+        }
+        req.sequelize.transaction((transaction) => {
+            return req.currentUser!.update(req.body, { transaction }).then(async user => {
+                if (didUpdateEmail) {
+                    await AuthenticationInfo.update({
+                        external_id: user.email
+                    }, { where: { user_id: user.id!, provider: 'email' }, transaction }).then(() => {
+                        user.sendVerificationEmail(false)
+                        return user
+                    })
+                }
+                return user
+            })
+        }).then((user) => {
+            res.jsonContent(user)
+        }).catch(next);
     }
 
     /**
