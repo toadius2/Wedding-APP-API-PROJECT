@@ -59,6 +59,15 @@ export default class Server {
                 let payload = { data: body };
                 if (pagination) {
                     payload['pagination'] = pagination
+                    if (req.query['skip']) {
+                        payload['pagination'].skipped = req.query['skip'];
+                    }
+                    if (req.query['limit']) {
+                        payload['pagination'].limited = req.query['limit'];
+                        if (req.query['skip']) {
+                            pagination['page'] = Math.ceil(parseInt(req.query['skip'] as string) / parseInt(req.query['limit'] as string)) + 1
+                        }
+                    }
                 }
                 if (headers) {
                     payload['headers'] = headers

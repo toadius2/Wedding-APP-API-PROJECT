@@ -11,6 +11,7 @@ declare global {
     interface Array<T> {
         toJSON(options?: any): any;
         unique(property?: string): Array<T>;
+        chunk(chunkSize: number): Array<Array<T>>
     }
 }
 Array.prototype.toJSON = function <T>(this: Array<T>, options) {
@@ -25,6 +26,13 @@ Array.prototype.toJSON = function <T>(this: Array<T>, options) {
     })
     return items;
 };
+
+Array.prototype.chunk = function <T>(size: number) {
+    var R = new Array<T>();
+    for (var i = 0; i < this.length; i += size)
+        R.push(this.slice(i, i + size));
+    return R;
+}
 
 Array.prototype.unique = function <T>(this: Array<T>, property?: string) {
     let s = new Set();
@@ -86,7 +94,7 @@ function init(force: boolean = false) {
     db.connect().then((s) => {
         logger.info("Database connected")
         modelsetup(s);
-        s.sync({ force: force, alter: nconf.get("LOCAL") && (nconf.get("NODE_ENV") == 'development') }).then(() => {
+        s.sync({ force: force, alter: false }).then(() => {
             logger.info("Setup finished")
             const Server = require('./server')['default'];
             if (Cluster.isMaster && !nconf.get('LOCAL')) {

@@ -1,3 +1,6 @@
+import * as fs from 'fs'
+import { join } from 'path'
+
 import * as Device from "./device"
 import * as AuthenticationInfo from "./authentication_info"
 import * as Wedding from "./wedding"
@@ -11,9 +14,8 @@ import * as WeddingTask from "./wedding_task"
 import * as WeddingTaskTemplate from "./wedding_task_template"
 import * as WeddingTimeline from "./wedding_timeline"
 import * as WeddingTaskTag from "./wedding_task_tag"
-
-import * as fs from 'fs'
-import { join } from 'path'
+import * as Vendor from "./vendor"
+import * as VendorPhoto from './vendor_photo'
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -30,6 +32,11 @@ export default function setup(s: Sequelize.Sequelize): void {
     WeddingTaskTemplate.define(s);
     WeddingTimeline.define(s);
     WeddingTaskTag.define(s);
+
+    Vendor.define(s);
+    VendorPhoto.define(s);
+
+    Vendor.Vendor.hasMany(VendorPhoto.VendorPhoto, { foreignKey: 'business_id' })
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
     AuthenticationInfo.AuthenticationInfo.belongsTo(User.User, { as: 'user' });
@@ -49,6 +56,12 @@ export default function setup(s: Sequelize.Sequelize): void {
 
     Event.Event.hasMany(Participants.EventParticipant, { onDelete: 'CASCADE', as: 'participants' });
     Participants.EventParticipant.belongsTo(Event.Event);
+
+    Vendor.Vendor.addScope('defaultScope', {
+        include: [{
+            model: VendorPhoto.VendorPhoto,
+        }]
+    }, { override: true });
 
     Event.Event.addScope('defaultScope', {
         include: [{

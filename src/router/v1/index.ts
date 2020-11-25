@@ -7,5 +7,9 @@ import { WeddingRouter } from "./wedding";
 import { EventsRouter } from "./events";
 import { WeddingTaskRouter } from './wedding_task';
 import { WeddingTimelineRouter } from "./wedding_timeline";
+import { VendorRouter } from "./vendor";
 
-export const Router: BasicRouter[] = [new UsersRouter(), new DevicesRouter(), new LoginRouter(), new BudgetItemRouter(), new WeddingRouter(), new EventsRouter(), new WeddingTaskRouter(), new WeddingTimelineRouter()];
+export const Router: BasicRouter[] = [new UsersRouter(), new DevicesRouter(),
+new LoginRouter(), new BudgetItemRouter(), new WeddingRouter(),
+new EventsRouter(), new WeddingTaskRouter(), new WeddingTimelineRouter(),
+new VendorRouter()];

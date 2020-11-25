@@ -21,11 +21,12 @@
                 "PUSH_ARN": "",
                 "BUCKET_URL": "",
                 "BUCKET_NAME": "",
-                "BUCKET_REGION": "",
+                "CDN": "https://media.nuvow.com",
                 "AWS_REGION": "us-east-1",
                 "FORGOT_PW_URL": "https://develop.nuvow.com/reset-password.html",
                 "GOOGLE_CLIENT_SECRET": "oCJS5mgzugx4I4KiaJeVaQ1Q",
                 "GOOGLE_CLIENT_ID": "1093199620446-74avmb57tti6dti590j26d9tjuj75ihj.apps.googleusercontent.com",
+                "GOOGLE_API_KEY": "AIzaSyDP1wFiiz3UjBQHMzwQ00JJV3TVhAp_uDo",
                 "AWS_PROFILE_NAME": "nuvow",
                 "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
@@ -53,10 +54,11 @@
                 "PUSH_ARN": "",
                 "BUCKET_URL": "",
                 "BUCKET_NAME": "",
-                "BUCKET_REGION": "",
+                "CDN": "https://media.nuvow.com",
                 "AWS_REGION": "us-east-1",
                 "FORGOT_PW_URL": "",
                 "AWS_PROFILE_NAME": "nuvow",
+                "GOOGLE_API_KEY": "AIzaSyDP1wFiiz3UjBQHMzwQ00JJV3TVhAp_uDo",
                 "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },
@@ -83,10 +85,11 @@
                 "PUSH_ARN": "",
                 "BUCKET_URL": "",
                 "BUCKET_NAME": "",
-                "BUCKET_REGION": "",
+                "CDN": "https://media.nuvow.com",
                 "AWS_REGION": "us-east-1",
                 "FORGOT_PW_URL": "",
                 "AWS_PROFILE_NAME": "nuvow",
+                "GOOGLE_API_KEY": "AIzaSyDP1wFiiz3UjBQHMzwQ00JJV3TVhAp_uDo",
                 "PORT": "8082"
                 //"REDIS_CONNECTION" // Set this only if fast-caching should be enabled
             },

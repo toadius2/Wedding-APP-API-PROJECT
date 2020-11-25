@@ -48,12 +48,6 @@ export class BudgetItemRouter extends BasicRouter {
         }
     }
 
-    /**
-     * This function deletes a budget item
-     * @param {APIRequest} req
-     * @param {e.Response} res
-     * @param {e.NextFunction} next
-     */
     private static deleteItem(req: ModelRouteRequest<BudgetItemInstance>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             req.currentModel.destroy().then(result => {
