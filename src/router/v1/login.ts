@@ -13,8 +13,8 @@ import { DeviceInstance, AuthenticationInfo, User, Device } from "../../model";
 import { isString, minLength, isStringAndNotEmpty, isBoolean } from "../middleware/validationrules";
 import { maxLength } from "../../router/middleware/validationrules";
 import EmailServer from '../../modules/emailserver'
-import * as nconf from 'nconf'
 import { DevicesRouter } from "./devices";
+import { generatePasswordReset } from "../../messages/email";
 
 export class LoginRouter extends BasicRouter {
 
@@ -53,7 +53,7 @@ export class LoginRouter extends BasicRouter {
         }), LoginRouter.changePassword);
 
         this.getInternalRouter().post('/resend-verification', isAuthorized, (req: APIRequest, res: APIResponse, next) => {
-            req.currentUser!.sendVerificationEmail()
+            req.currentUser!.sendVerificationEmail(false)
             res.jsonContent({ status: 'success' })
             return null
         })
@@ -150,39 +150,46 @@ export class LoginRouter extends BasicRouter {
                 provider: "email"
             },
             include: [{ model: User, as: "user" }]
-        }).then((auth_info: AuthenticationInfoInstance) => {
-            if (auth_info) {
-                const generateToken = (auth_info: AuthenticationInfoInstance): Promise<AuthenticationInfoInstance> => {
-                    return new Promise<AuthenticationInfoInstance>((resolve, reject) => {
-                        auth_info.reset_token = uuid.v4();
-                        auth_info.save().then((auth_info) => {
-                            resolve(auth_info);
-                        }).catch((err) => {
-                            if (err instanceof UniqueConstraintError) {
-                                generateToken(auth_info).then(resolve).catch(reject);
-                            } else {
-                                reject(err);
-                            }
-                        })
+        }).then(async (auth_info: AuthenticationInfoInstance) => {
+            const generateToken = (auth_info: AuthenticationInfoInstance): Promise<AuthenticationInfoInstance> => {
+                return new Promise<AuthenticationInfoInstance>((resolve, reject) => {
+                    auth_info.reset_token = uuid.v4();
+                    auth_info.save().then((auth_info) => {
+                        resolve(auth_info);
+                    }).catch((err) => {
+                        if (err instanceof UniqueConstraintError) {
+                            generateToken(auth_info).then(resolve).catch(reject);
+                        } else {
+                            reject(err);
+                        }
                     })
-                };
+                })
+            };
+            if (auth_info) {
                 generateToken(auth_info).then((token) => {
                     let server = new EmailServer();
-                    let text = "Hi " + auth_info.user!.full_name + "!" + '\r\n' + '\r\n';
-                    text += "You or someone else requested a password reset for your account. If this was not you or your intention, just relax and ignore this email."
-                    text += '\r\n' + '\r\n';
-                    text += "If you wish to reset your password, all you need to do is follow this link to reset your password:" + '\r\n' + '\r\n';
-                    text += nconf.get("FORGOT_PW_URL");
-                    text += "?token=" + encodeURIComponent(token.reset_token!);
-                    if (process.env["NODE_ENV"] == "development") {
-                        text += "#develop";
-                    }
-                    server.send(auth_info.user!.email, "Reset your Password", text);
-                    res.jsonContent({ 'message': 'Reset token was sent to ' + req.body.email });
-                    return null
+                    let content = generatePasswordReset(auth_info.user, token.reset_token!)
+                    return server.sendTemplate(auth_info.user.email, content.title, content.subTitle, content.body).then(() => {
+                        res.jsonContent({ 'message': 'Reset token was sent to ' + req.body.email });
+                    })
                 }).catch(next);
             } else {
-                return next(new ResourceNotFoundError(undefined, 'Email'));
+                const user = (await User.findOne({ where: { email: req.body.email, }, include: [{ model: AuthenticationInfo, as: 'authentication_infos' }], rejectOnEmpty: true }))!
+                if (user && user.authentication_infos && !user.authentication_infos.find(a => a.provider == 'email')) {
+                    return user!.createAuthentication_info({
+                        provider: "email",
+                        external_id: user.email
+                    }).then((info) => {
+                        return generateToken(info).then((token) => {
+                            let server = new EmailServer();
+                            let content = generatePasswordReset(user, token.reset_token!)
+                            return server.sendTemplate(user.email, content.title, content.subTitle, content.body).then(() => {
+                                res.jsonContent({ 'message': 'Reset token was sent to ' + req.body.email });
+                            })
+                        })
+                    }).catch(next);
+                }
+                return next(new ResourceNotFoundError('A user with this email_address could not be found', 'User'));
             }
         }).catch(next);
     }

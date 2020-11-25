@@ -1,7 +1,7 @@
 import * as express from "express"
 import { isAuthorized } from "../middleware/authorization"
 import * as passwordHash from 'password-hash'
-import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
+import { APIRequest, BasicRouter, APIResponse, APINextFunction } from "../basicrouter"
 import { AuthenticationInfoInstance, User, AuthenticationInfo, UserAttributes, DeviceAttributes } from "../../model"
 import { validateFacebookToken } from "../middleware/facebook"
 import * as EmailValidator from "email-validator"
@@ -123,6 +123,23 @@ export class UsersRouter extends BasicRouter {
         }).catch(next);
     }
 
+    private static async checkUserWithEmail(email: string, defaultError: Error, next: APINextFunction) {
+        try {
+            if (email && email != '') {
+                const user = (await User.findOne({ where: { email: email }, include: [{ model: AuthenticationInfo, as: 'authentication_infos' }], rejectOnEmpty: true }))!
+                if (user && user.authentication_infos && user.authentication_infos.length > 0) {
+                    let info = user.authentication_infos[0].provider.substr(0, 1).toUpperCase() + user.authentication_infos[0].provider.substr(1)
+                    next(new ResourceNotFoundError(`You created your account using ${info}. Please use ${info} to Log in again`, 'AuthenticationInfo'));
+                    return null
+                }
+            }
+        } catch (error) {
+
+        }
+        next(defaultError)
+        return null
+    }
+
     /**
      * Registers a new user using email or (registers / logs in) a facebook user
      * @param {APIRequest<RegistrationBodyParameters>} req
@@ -138,9 +155,10 @@ export class UsersRouter extends BasicRouter {
                     if (device.device_data_os == 'web') {
                         res.setAuthCookie(device.session_token!)
                     }
+                    user.sendVerificationEmail(true);
                     res.status(201)
                     res.jsonContent((device as any).toJSON({ with_session: true }));
-                }).catch(next);
+                })
             }).catch(next);
         };
 
@@ -171,8 +189,10 @@ export class UsersRouter extends BasicRouter {
                     }
                     res.status(201)
                     res.jsonContent((device as any).toJSON({ with_session: true }));
-                }).catch(next);
-            }).catch(next);
+                })
+            }).catch((err) => {
+                return UsersRouter.checkUserWithEmail(data.email, err, next)
+            })
         };
 
         const token = req.body.registration_data.google_token;
@@ -222,6 +242,7 @@ export class UsersRouter extends BasicRouter {
                             createUser({
                                 email: data.email!,
                                 full_name: data.name,
+                                verified: true,
                                 authentication_infos: [<any>{
                                     provider: "google",
                                     external_id: data.id
@@ -248,8 +269,10 @@ export class UsersRouter extends BasicRouter {
                     }
                     res.status(201)
                     res.jsonContent((device as any).toJSON({ with_session: true }));
-                }).catch(next);
-            }).catch(next);
+                })
+            }).catch((err) => {
+                return UsersRouter.checkUserWithEmail(data.email, err, next)
+            })
         };
 
         const fbToken = req.body.registration_data.facebook_token;
@@ -274,6 +297,7 @@ export class UsersRouter extends BasicRouter {
                     createUser({
                         email: data.email!,
                         full_name: data.name,
+                        verified: true,
                         authentication_infos: [<any>{
                             provider: "facebook",
                             external_id: data.id

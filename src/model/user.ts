@@ -3,9 +3,6 @@ import * as Sequelize from "sequelize"
 import * as Device from "./device"
 import * as AuthenticationInfo from "./authentication_info"
 import * as WeddingInfo from "./wedding"
-import * as uuid from 'uuid'
-import EmailServer from "../modules/emailserver";
-import * as logger from '../logger'
 
 export interface UserAttributes extends base.BaseModelAttributes {
     email: string
@@ -35,7 +32,7 @@ export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAt
 
     createWedding: Sequelize.HasManyCreateAssociationMixin<WeddingInfo.WeddingAttributes, WeddingInfo.WeddingInstance> // use hasmany as wrong ts for has one
     getWedding: Sequelize.HasOneGetAssociationMixin<WeddingInfo.WeddingInstance>
-    sendVerificationEmail: () => Promise<void>
+    sendVerificationEmail: (signupMode: boolean) => Promise<void>
 }
 
 export let User: Sequelize.Model<UserInstance, UserAttributes>;
@@ -52,6 +49,10 @@ export function define(sequelize: Sequelize.Sequelize): void {
         full_name: {
             type: Sequelize.STRING(),
             allowNull: false
+        },
+        username: {
+            type: Sequelize.STRING(),
+            allowNull: true
         },
         profile_image_url: {
             type: Sequelize.STRING(255),
@@ -74,12 +75,4 @@ export function define(sequelize: Sequelize.Sequelize): void {
                 { fields: ['email'], method: 'HASH', unique: true },
             ],
         });
-    (User as any).prototype.sendVerificationEmail = async function (this: UserInstance) {
-        this.authentication_infos![0].verification_code = uuid.v4().slice(0, 4)
-        await this.authentication_infos![0].save()
-        new EmailServer().send(this.email, 'Email verification', 'Your verification code: ' + this.authentication_infos![0].verification_code).catch(err => {
-            logger.error('Error sending verifcation email', err, 'User-sendVerifcationEmail')
-        })
-        return null
-    }
 }

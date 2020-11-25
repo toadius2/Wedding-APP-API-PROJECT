@@ -12,6 +12,9 @@ import * as WeddingTaskTemplate from "./wedding_task_template"
 import * as WeddingTimeline from "./wedding_timeline"
 import * as WeddingTaskTag from "./wedding_task_tag"
 
+import * as fs from 'fs'
+import { join } from 'path'
+
 export default function setup(s: Sequelize.Sequelize): void {
 
     // User / Device Data
@@ -77,6 +80,15 @@ export default function setup(s: Sequelize.Sequelize): void {
             });
             return returning;
         };
+    })
+
+    fs.readdirSync(join(__dirname, 'methods')).filter(m => m.endsWith('.js')).forEach((model) => {
+        const Model = s.model(Object.keys(s.models).find(m => {
+            return m.toLowerCase() == model.replace('.js', '').toLowerCase()
+        })!)
+        if (Model) {
+            Object.assign((Model as any).prototype, require(join(__dirname, 'methods', model)))
+        }
     })
 
 }

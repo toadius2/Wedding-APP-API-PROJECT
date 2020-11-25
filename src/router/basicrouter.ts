@@ -38,6 +38,8 @@ export interface ModelRouteRequest<Model, BodyParameters = any> extends APIReque
     currentModel: Model;
 }
 
+export type APINextFunction = express.NextFunction
+
 type ValidationContainer = { [key: string]: (ValidatorFunction<any> | ValidatorFunction<any>[] | ValidationContainer) }
 
 export class BasicRouter {
