@@ -17,7 +17,6 @@ import InternalServerError from "../../error/internalservererror";
 import { DevicesRouter } from "./devices"
 import { validateGoogleToken } from "../middleware/google"
 import * as Sequelize from 'sequelize'
-import { delete } from "request"
 const bucket_url = nconf.get("BUCKET_URL");
 
 export class UsersRouter extends BasicRouter {
