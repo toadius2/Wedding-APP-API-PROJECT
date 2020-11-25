@@ -8,7 +8,7 @@ import { InvalidLoginError, ResourceNotFoundError, InvalidParametersError } from
 import * as EmailValidator from 'email-validator';
 import * as uuid from "uuid"
 import * as async from "async"
-import { UniqueConstraintError } from "sequelize";
+import { Op, UniqueConstraintError } from "sequelize";
 import { DeviceInstance, AuthenticationInfo, User, Device } from "../../model";
 import { isString, minLength, isStringAndNotEmpty, isBoolean } from "../middleware/validationrules";
 import { maxLength } from "../../router/middleware/validationrules";
@@ -280,9 +280,9 @@ export class LoginRouter extends BasicRouter {
             }
 
             if (auth_info === undefined) {
-                return next(new ResourceNotFoundError(undefined, 'AuthenticationInfo'));
+                return next(new InvalidLoginError())
             } else {
-                req.sequelize.transaction(function (t) {
+                return req.sequelize.transaction(function (t) {
 
                     // chain all your queries here. make sure you return them.
                     auth_info!.password = passwordHash.generate(req.body.password, {
@@ -290,16 +290,16 @@ export class LoginRouter extends BasicRouter {
                     });
 
                     return auth_info!.save({ transaction: t }).then((auth_info) => {
-                        return req.sequelize.model("Device").findAll({
+                        return Device.findAll({
                             where: {
-                                $not: {
+                                [Op.not]: {
                                     id: req.currentDevice!.id,
                                 },
                                 user_id: auth_info.user.id
                             },
                             transaction: t
                         }).then((devices: DeviceInstance[]) => {
-                            return new Promise((resolve, reject) => {
+                            return new Promise((resolve) => {
                                 async.each(devices, (device, callback) => {
                                     device.session_token = uuid.v4();
                                     device.save({ transaction: t }).then(() => {
@@ -307,7 +307,6 @@ export class LoginRouter extends BasicRouter {
                                     }).catch(callback);
                                 }, (err) => {
                                     if (err) {
-                                        throw err;
                                     }
                                     resolve();
                                 });
@@ -316,11 +315,9 @@ export class LoginRouter extends BasicRouter {
                         })
                     })
 
-                }).then(function (result) {
+                }).then(function () {
                     res.jsonContent({ 'message': 'Password successfully changed' });
-                }).catch(function (err) {
-                    next(err);
-                });
+                })
             }
         }).catch(next);
     }
