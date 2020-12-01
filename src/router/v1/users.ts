@@ -379,7 +379,6 @@ export class UsersRouter extends BasicRouter {
                         Bucket: nconf.get('BUCKET_NAME'),
                         Key: s3Key,
                         Body: data,
-                        ACL: 'public-read',
                         ContentType: 'image/jpeg'
                     }, function (err, response) {
                         next(err, response);
@@ -411,8 +410,8 @@ export class UsersRouter extends BasicRouter {
                     if (req.db_cache)
                         req.db_cache.invalidateModel('Device', req.token);
                     req.currentUser!.updateAttributes({
-                        profile_image_url: bucket_url + s3Key,
-                        profile_image_thumbnail_url: bucket_url + s3ThumbKey,
+                        profile_image_url: bucket_url + '/' + s3Key,
+                        profile_image_thumbnail_url: bucket_url + '/' + s3ThumbKey,
                         profile_image_promotion_url: null
                     }).then((user) => {
                         res.jsonContent(user);

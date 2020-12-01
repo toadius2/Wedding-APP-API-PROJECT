@@ -8,8 +8,9 @@ import { EventsRouter } from "./events";
 import { WeddingTaskRouter } from './wedding_task';
 import { WeddingTimelineRouter } from "./wedding_timeline";
 import { VendorRouter } from "./vendor";
+import { InvoiceRouter } from "./invoice";
 
 export const Router: BasicRouter[] = [new UsersRouter(), new DevicesRouter(),
 new LoginRouter(), new BudgetItemRouter(), new WeddingRouter(),
 new EventsRouter(), new WeddingTaskRouter(), new WeddingTimelineRouter(),
-new VendorRouter()];
+new VendorRouter(), new InvoiceRouter()];

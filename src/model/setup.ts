@@ -16,6 +16,7 @@ import * as WeddingTimeline from "./wedding_timeline"
 import * as WeddingTaskTag from "./wedding_task_tag"
 import * as Vendor from "./vendor"
 import * as VendorPhoto from './vendor_photo'
+import * as Invoice from './invoice'
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -36,6 +37,8 @@ export default function setup(s: Sequelize.Sequelize): void {
     Vendor.define(s);
     VendorPhoto.define(s);
 
+    Invoice.define(s);
+
     Vendor.Vendor.hasMany(VendorPhoto.VendorPhoto, { foreignKey: 'business_id' })
 
     User.User.hasMany(AuthenticationInfo.AuthenticationInfo, { onDelete: 'CASCADE', as: 'authentication_infos' });
@@ -44,6 +47,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     User.User.hasOne(Wedding.Wedding);
     Wedding.Wedding.belongsTo(User.User);
 
+    Wedding.Wedding.hasMany(Invoice.Invoice);
     Wedding.Wedding.hasMany(BudgetItem.BudgetItem, { as: 'BudgetItems' });
     Wedding.Wedding.hasMany(WeddingTask.WeddingTask, { as: 'WeddingTask' });
     Wedding.Wedding.hasMany(Event.Event, { as: 'Events' });

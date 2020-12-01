@@ -5,7 +5,7 @@ import { VendorPhoto } from "../../model/vendor_photo";
 import { gecode } from "../../modules/geocode";
 import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 
-const SEARCH_DISTAANCE_IN_M = 60 * 1000
+const SEARCH_DISTAANCE_IN_M = 100 * 1000
 
 export class VendorRouter extends BasicRouter {
 
