@@ -15,20 +15,22 @@ import { S3 } from "aws-sdk";
 const bucket_url = nconf.get("BUCKET_URL");
 
 
-const InvoiceMiddleware = BasicRouter.requireKeysOfTypes({
-    category: isString,
-    'amount?': isString,
-    'paid?': isEnum(['false', 'true'])
-})
-
 export class InvoiceRouter extends BasicRouter {
 
     constructor() {
         super();
         this.getInternalRouter().get('/invoices', isAuthorized, hasWedding, InvoiceRouter.getInvoices);
         this.getInternalRouter().get('/invoices/:id', isAuthorized, hasWedding, BasicRouter.populateModel(Invoice, 'id'), InvoiceRouter.getInvoice);
-        this.getInternalRouter().post('/invoices', isAuthorized, hasWedding, multer({ dest: '.uploads/' }).single('invoice'), InvoiceMiddleware, InvoiceRouter.newInvoice);
-        this.getInternalRouter().put('/invoices/:id', isAuthorized, hasWedding, multer({ dest: '.uploads/' }).single('invoice'), InvoiceMiddleware, BasicRouter.populateModel(Invoice, 'id'), InvoiceRouter.updateInvoice);
+        this.getInternalRouter().post('/invoices', isAuthorized, hasWedding, multer({ dest: '.uploads/' }).single('invoice'), BasicRouter.requireKeysOfTypes({
+            category: isString,
+            'amount?': isString,
+            'paid?': isEnum(['false', 'true'])
+        }), InvoiceRouter.newInvoice);
+        this.getInternalRouter().put('/invoices/:id', isAuthorized, hasWedding, multer({ dest: '.uploads/' }).single('invoice'), BasicRouter.requireKeysOfTypes({
+            'category?': isString,
+            'amount?': isString,
+            'paid?': isEnum(['false', 'true'])
+        }), BasicRouter.populateModel(Invoice, 'id'), InvoiceRouter.updateInvoice);
         this.getInternalRouter().delete('/invoices/:id', isAuthorized, hasWedding, BasicRouter.populateModel(Invoice, 'id'), InvoiceRouter.deleteInvoice);
     }
 
