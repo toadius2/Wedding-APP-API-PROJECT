@@ -10,7 +10,7 @@ import { Invoice, InvoiceAttributes, InvoiceInstance } from "../../model/invoice
 import * as nconf from 'nconf'
 import * as uuid from "uuid";
 import { S3 } from "aws-sdk";
-
+import * as fs from 'fs'
 
 const bucket_url = nconf.get("BUCKET_URL");
 
@@ -52,7 +52,7 @@ export class InvoiceRouter extends BasicRouter {
             }).putObject({
                 Bucket: nconf.get('BUCKET_NAME'),
                 Key: s3Key,
-                Body: req.file.buffer,
+                Body: fs.createReadStream(req.file.path),
                 ContentType: req.file.mimetype,
             }).promise()
             req.currentWedding!.createInvoice({ ...req.body, invoice_url: bucket_url + '/' + s3Key }).then(invoice => {
@@ -72,7 +72,7 @@ export class InvoiceRouter extends BasicRouter {
                 }).putObject({
                     Bucket: nconf.get('BUCKET_NAME'),
                     Key: s3Key,
-                    Body: req.file.buffer,
+                    Body: fs.createReadStream(req.file.path),
                     ContentType: req.file.mimetype,
                 }).promise()
                 req.body.invoice_url = bucket_url + '/' + s3Key
