@@ -12,6 +12,7 @@ import DBCache from 'gradelo-db-cache'
 import applyCORS from "./router/middleware/cors";
 import * as cookieParser from 'cookie-parser'
 import { DOMAINS } from "./config"
+import { RequestEntityTooLargeError } from "./error"
 
 export default class Server {
     app: express.Express;
@@ -127,7 +128,7 @@ export default class Server {
             next(new error.RouteNotFoundError('Route not found', req.path));
         });
         this.app.use((errRaw: any, req: express.Request, res: APIResponse, next: express.NextFunction) => {
-            let err = prepareErrorForResponse(errRaw);
+            let err = prepareErrorForResponse(errRaw, req.path);
             res.status((<any>err).status || (<any>err).statusCode || 500);
             res.json({
                 message: err.message,
@@ -136,3 +137,5 @@ export default class Server {
         })
     }
 }
+
+console.log(JSON.stringify(new RequestEntityTooLargeError().toErrorJSON(), undefined, 4))
