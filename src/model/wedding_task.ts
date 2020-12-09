@@ -10,7 +10,7 @@ export interface WeddingTaskAttributes extends base.BaseModelAttributes {
 }
 
 export interface WeddingTaskInstance extends Sequelize.Instance<WeddingTaskAttributes>, WeddingTaskAttributes {
-    wedding_id: String
+    wedding_id: string
     tags: WeddingTaskTagInstance[]
 
     setTags: Sequelize.BelongsToManySetAssociationsMixin<WeddingTaskTagInstance, string, {}>

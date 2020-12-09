@@ -17,6 +17,7 @@ import * as WeddingTaskTag from "./wedding_task_tag"
 import * as Vendor from "./vendor"
 import * as VendorPhoto from './vendor_photo'
 import * as Invoice from './invoice'
+import * as WeddingGuest from './wedding_guest'
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -33,11 +34,13 @@ export default function setup(s: Sequelize.Sequelize): void {
     WeddingTaskTemplate.define(s);
     WeddingTimeline.define(s);
     WeddingTaskTag.define(s);
+    WeddingGuest.define(s);
+
+    Invoice.define(s);
 
     Vendor.define(s);
     VendorPhoto.define(s);
 
-    Invoice.define(s);
 
     Vendor.Vendor.hasMany(VendorPhoto.VendorPhoto, { foreignKey: 'business_id' })
 
@@ -52,6 +55,10 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.Wedding.hasMany(WeddingTask.WeddingTask, { as: 'WeddingTask' });
     Wedding.Wedding.hasMany(Event.Event, { as: 'Events' });
     Wedding.Wedding.hasMany(WeddingTimeline.WeddingTimeline, { as: 'WeddingTimeline' });
+    Wedding.Wedding.hasMany(WeddingGuest.WeddingGuest);
+
+    WeddingGuest.WeddingGuest.belongsTo(Wedding.Wedding);
+    WeddingGuest.WeddingGuest.hasOne(WeddingGuest.WeddingGuest, { as: 'related' });
 
     WeddingTask.WeddingTask.belongsToMany(WeddingTaskTag.WeddingTaskTag, { through: 'WeddingTaskTagAssociation', as: { singular: 'tag', plural: 'tags' } })
 
@@ -78,6 +85,13 @@ export default function setup(s: Sequelize.Sequelize): void {
         include: [{
             model: WeddingTaskTag.WeddingTaskTag,
             as: 'tags'
+        }]
+    }, { override: true });
+
+    WeddingGuest.WeddingGuest.addScope('defaultScope', {
+        include: [{
+            model: WeddingGuest.WeddingGuest.unscoped(),
+            as: 'related'
         }]
     }, { override: true });
 

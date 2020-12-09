@@ -21,6 +21,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         status: {
             type: Sequelize.ENUM(['accepted', 'declined', 'maybe', 'pending']),
             allowNull: false,
+            defaultValue: 'pending'
         }
     };
     EventParticipant = <Sequelize.Model<EventParticipantInstance, EventParticipantAttributes>>
