@@ -1,5 +1,7 @@
 import * as base from "./base"
 import * as Sequelize from "sequelize"
+import uuid = require("uuid");
+import { WeddingInstance } from "./wedding";
 
 export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     first_name: string
@@ -18,6 +20,8 @@ export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     city?: string;
     state?: string;
     zip_code?: string;
+
+    rsvp_token: string;
 }
 
 export interface WeddingGuestInstance extends Sequelize.Instance<WeddingGuestAttributes>, WeddingGuestAttributes {
@@ -25,6 +29,8 @@ export interface WeddingGuestInstance extends Sequelize.Instance<WeddingGuestAtt
     related?: WeddingGuestInstance
 
     setRelated: Sequelize.HasOneSetAssociationMixin<WeddingGuestInstance, string>
+    getWedding: Sequelize.BelongsToGetAssociationMixin<WeddingInstance>
+    sendInvitationEmail(): Promise<void>
 }
 
 export let WeddingGuest: Sequelize.Model<WeddingGuestInstance, WeddingGuestAttributes>;
@@ -80,6 +86,11 @@ export function define(sequelize: Sequelize.Sequelize): void {
             type: Sequelize.ENUM(['accepted', 'declined', 'maybe', 'pending']),
             allowNull: false,
             defaultValue: 'pending'
+        },
+        rsvp_token: {
+            type: Sequelize.STRING(),
+            allowNull: false,
+            defaultValue: uuid.v4
         }
     };
     WeddingGuest = <Sequelize.Model<WeddingGuestInstance, WeddingGuestAttributes>>
@@ -89,6 +100,7 @@ export function define(sequelize: Sequelize.Sequelize): void {
         });
     (<any>WeddingGuest).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());
+        delete values.rsvp_token
         return values;
     };
 }

@@ -114,12 +114,17 @@ export default function setup(s: Sequelize.Sequelize): void {
     })
 
     fs.readdirSync(join(__dirname, 'methods')).filter(m => m.endsWith('.js')).forEach((model) => {
-        const Model = s.model(Object.keys(s.models).find(m => {
-            return m.toLowerCase() == model.replace('.js', '').toLowerCase()
-        })!)
-        if (Model) {
-            Object.assign((Model as any).prototype, require(join(__dirname, 'methods', model)))
+        try {
+            const Model = s.model(Object.keys(s.models).find(m => {
+                return m.toLowerCase() == model.replace('.js', '').replace(/_/gi, '').toLowerCase()
+            })!)
+            if (Model) {
+                Object.assign((Model as any).prototype, require(join(__dirname, 'methods', model)))
+            }
+        } catch (error) {
+            console.error(error)
         }
+
     })
 
 }

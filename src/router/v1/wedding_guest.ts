@@ -37,6 +37,7 @@ export class WeddingGuestRouter extends BasicRouter {
         this.getInternalRouter().post('/wedding-guest', isAuthorized, hasWedding, GuestMiddleware, WeddingGuestRouter.newWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding, GuestMiddleware, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.updateWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.relateWeddingGuest);
+        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/request-rsvp', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.requestRSVP);
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding,
             BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteWeddingGuest);
@@ -50,7 +51,9 @@ export class WeddingGuestRouter extends BasicRouter {
 
     private static newWeddingGuest(req: APIRequest<WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
         return req.currentWedding!.createWeddingGuest(req.body).then(result => {
+            result.sendInvitationEmail()
             res.status(201).jsonContent(result);
+            return null;
         }).catch(next);
     }
 
@@ -66,6 +69,19 @@ export class WeddingGuestRouter extends BasicRouter {
             Promise.all([req.currentModel.setRelated(toRelate), toRelate.setRelated(req.currentModel)]).then(async () => {
                 const result = await req.currentModel.reload()
                 res.jsonContent(result)
+            }).catch(next)
+        } else {
+            next(new NotAccessibleError());
+        }
+    }
+
+    private static async requestRSVP(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
+        if (req.currentModel.wedding_id === req.currentWedding!.id) {
+            if (!req.currentModel.email) {
+                return next(new NotAccessibleError('Email is not provided'))
+            }
+            req.currentModel.sendInvitationEmail().then(() => {
+                res.jsonContent({})
             }).catch(next)
         } else {
             next(new NotAccessibleError());
@@ -90,8 +106,13 @@ export class WeddingGuestRouter extends BasicRouter {
 
     private static updateWeddingGuest(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
+            const sendEmail = req.body.email != req.currentModel.email
             return req.currentModel.update(req.body).then((result) => {
+                if (sendEmail) {
+                    result.sendInvitationEmail()
+                }
                 res.jsonContent(result);
+                return null
             }).catch(next);
         } else {
             next(new NotAccessibleError());
