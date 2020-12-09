@@ -41,6 +41,29 @@ export class WeddingGuestRouter extends BasicRouter {
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding,
             BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteWeddingGuest);
+
+        this.getInternalRouter().get('/rsvp/:token', WeddingGuestRouter.getRSVP);
+        this.getInternalRouter().put('/rsvp/:token', WeddingGuestRouter.updateRSVP);
+    }
+
+    private static getRSVP(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        WeddingGuest.findOne({
+            where: { rsvp_token: req.params.token },
+            rejectOnEmpty: true
+        }).then((guest) => {
+            res.jsonContent(guest);
+        }).catch(next)
+    }
+
+    private static updateRSVP(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        WeddingGuest.findOne({
+            where: { rsvp_token: req.params.token },
+            rejectOnEmpty: true
+        }).then((guest) => {
+            return guest!.update(req.body).then((result) => {
+                res.jsonContent(result);
+            })
+        }).catch(next)
     }
 
     private static getWeddingGuests(req: APIRequest, res: APIResponse, next: express.NextFunction) {
