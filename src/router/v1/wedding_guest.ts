@@ -5,7 +5,6 @@ import { APIRequest, BasicRouter, APIResponse } from "../basicrouter"
 import { ModelRouteRequest } from "../basicrouter";
 import { NotAccessibleError, ResourceNotFoundError } from "../../error";
 import { isString, isBoolean, isArrayOfType, isEnum } from "../middleware/validationrules";
-import { Transaction } from "sequelize";
 import { WeddingGuest, WeddingGuestAttributes, WeddingGuestInstance } from "../../model/wedding_guest";
 import * as EmailValidator from "email-validator"
 
