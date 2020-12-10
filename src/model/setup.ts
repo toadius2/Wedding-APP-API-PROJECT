@@ -58,7 +58,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.Wedding.hasMany(WeddingGuest.WeddingGuest);
 
     WeddingGuest.WeddingGuest.belongsTo(Wedding.Wedding);
-    WeddingGuest.WeddingGuest.hasOne(WeddingGuest.WeddingGuest, { as: 'related' });
+    WeddingGuest.WeddingGuest.belongsToMany(WeddingGuest.WeddingGuest, { as: 'related', through: 'WeddingGuestRelatedAssociation' });
 
     WeddingTask.WeddingTask.belongsToMany(WeddingTaskTag.WeddingTaskTag, { through: 'WeddingTaskTagAssociation', as: { singular: 'tag', plural: 'tags' } })
 

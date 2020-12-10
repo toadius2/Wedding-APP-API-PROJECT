@@ -39,7 +39,7 @@ export class WeddingGuestRouter extends BasicRouter {
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding, GuestMiddleware, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.updateWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.relateWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/request-rsvp', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.requestRSVP);
-        this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
+        this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding,
             BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteWeddingGuest);
 
@@ -98,7 +98,7 @@ export class WeddingGuestRouter extends BasicRouter {
             if (!toRelate) {
                 return next(new ResourceNotFoundError(undefined, 'Wedding Guest'))
             }
-            Promise.all([req.currentModel.setRelated(toRelate), toRelate.setRelated(req.currentModel)]).then(async () => {
+            Promise.all([req.currentModel.addRelated(toRelate), toRelate.addRelated(req.currentModel)]).then(async () => {
                 const result = await req.currentModel.reload()
                 res.jsonContent(result)
             }).catch(next)
@@ -122,10 +122,14 @@ export class WeddingGuestRouter extends BasicRouter {
 
     private static async deleteRelation(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
-            if (!req.currentModel.related) {
+            if (req.currentModel.related?.length == 0) {
                 res.jsonContent(req.currentModel)
             } else {
-                Promise.all([req.currentModel.setRelated(), req.currentModel.related.setRelated()]).then(async () => {
+                const toRelate = await WeddingGuest.findById(req.params.other_wedding_guest)
+                if (!toRelate) {
+                    return next(new ResourceNotFoundError(undefined, 'Wedding Guest'))
+                }
+                Promise.all([req.currentModel.removeRelated(toRelate), toRelate.removeRelated(req.currentModel)]).then(async () => {
                     const result = await req.currentModel.reload()
                     res.jsonContent(result)
                 }).catch(next)
