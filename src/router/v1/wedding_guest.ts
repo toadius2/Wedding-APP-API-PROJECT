@@ -34,6 +34,7 @@ export class WeddingGuestRouter extends BasicRouter {
     constructor() {
         super();
         this.getInternalRouter().get('/wedding-guest', isAuthorized, hasWedding, WeddingGuestRouter.getWeddingGuests);
+        this.getInternalRouter().get('/wedding-guest-emails', isAuthorized, hasWedding, WeddingGuestRouter.getWeddingGuestEmails);
         this.getInternalRouter().post('/wedding-guest', isAuthorized, hasWedding, GuestMiddleware, WeddingGuestRouter.newWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding, GuestMiddleware, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.updateWeddingGuest);
         this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.relateWeddingGuest);
@@ -64,6 +65,14 @@ export class WeddingGuestRouter extends BasicRouter {
                 res.jsonContent(result);
             })
         }).catch(next)
+    }
+
+    private static getWeddingGuestEmails(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.getWeddingGuests({
+            scope: 'email',
+        }).then(result => {
+            res.jsonContent(result.map(a => a.email));
+        }).catch(next);
     }
 
     private static getWeddingGuests(req: APIRequest, res: APIResponse, next: express.NextFunction) {

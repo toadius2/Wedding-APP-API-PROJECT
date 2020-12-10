@@ -2,6 +2,7 @@ import * as base from "./base"
 import * as Sequelize from "sequelize"
 import uuid = require("uuid");
 import { WeddingInstance } from "./wedding";
+import { Op } from "sequelize";
 
 export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     first_name: string
@@ -96,7 +97,18 @@ export function define(sequelize: Sequelize.Sequelize): void {
     WeddingGuest = <Sequelize.Model<WeddingGuestInstance, WeddingGuestAttributes>>
         sequelize.define('WeddingGuest', Object.assign({}, base.defaultColums(), definition) as any, {
             paranoid: true,
-            underscored: true
+            underscored: true,
+            scopes: {
+                email: {
+                    attributes: ['email'],
+                    where: {
+                        email: {
+                            [Op.not]: null
+                        }
+                    },
+                    group: ['email']
+                }
+            }
         });
     (<any>WeddingGuest).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());
