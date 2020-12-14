@@ -23,6 +23,8 @@ export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     zip_code?: string;
 
     rsvp_token: string;
+
+    group_id?: string;
 }
 
 export interface WeddingGuestInstance extends Sequelize.Instance<WeddingGuestAttributes>, WeddingGuestAttributes {

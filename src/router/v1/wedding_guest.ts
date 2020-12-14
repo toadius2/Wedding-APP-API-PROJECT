@@ -55,6 +55,9 @@ export class WeddingGuestRouter extends BasicRouter {
         this.getInternalRouter().post('/wedding-guest-group', isAuthorized, hasWedding, GuestGroupMiddleware,
             WeddingGuestRouter.createWeddingGuestGroup);
 
+        this.getInternalRouter().put('/wedding-guest-group/:id', isAuthorized, hasWedding, GuestGroupMiddleware,
+            WeddingGuestRouter.editWeddingGuestGroup);
+
         this.getInternalRouter().get('/wedding-guest-group', isAuthorized, hasWedding,
             WeddingGuestRouter.getWeddingGuestGroups);
 
@@ -71,8 +74,12 @@ export class WeddingGuestRouter extends BasicRouter {
         }).catch(next)
     }
 
-    private static removeWedddingGuestGroup(req: ModelRouteRequest<WeddingGuestGroupInstance>, res: APIResponse, next: express.NextFunction) {
+    private static async removeWedddingGuestGroup(req: ModelRouteRequest<WeddingGuestGroupInstance>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
+            const count = await WeddingGuest.count({ where: { group_id: req.currentModel.id! } })
+            if (count > 0) {
+                return next(new NotAccessibleError('Please move all guests in this group to a different group'))
+            }
             req.currentModel.destroy().then(() => {
                 res.jsonContent({ 'message': 'Wedding Guest Group successfully deleted' });
             }).catch(next)
@@ -83,6 +90,12 @@ export class WeddingGuestRouter extends BasicRouter {
 
     private static createWeddingGuestGroup(req: APIRequest, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.createWeddingGuestGroup(req.body).then((group) => {
+            res.jsonContent(group);
+        }).catch(next)
+    }
+
+    private static editWeddingGuestGroup(req: ModelRouteRequest<WeddingGuestGroupInstance>, res: APIResponse, next: express.NextFunction) {
+        req.currentModel!.update(req.body).then((group) => {
             res.jsonContent(group);
         }).catch(next)
     }
