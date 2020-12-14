@@ -18,6 +18,7 @@ import * as Vendor from "./vendor"
 import * as VendorPhoto from './vendor_photo'
 import * as Invoice from './invoice'
 import * as WeddingGuest from './wedding_guest'
+import * as WeddingGuestGroup from './wedding_guest_group'
 
 export default function setup(s: Sequelize.Sequelize): void {
 
@@ -35,6 +36,7 @@ export default function setup(s: Sequelize.Sequelize): void {
     WeddingTimeline.define(s);
     WeddingTaskTag.define(s);
     WeddingGuest.define(s);
+    WeddingGuestGroup.define(s);
 
     Invoice.define(s);
 
@@ -56,9 +58,13 @@ export default function setup(s: Sequelize.Sequelize): void {
     Wedding.Wedding.hasMany(Event.Event, { as: 'Events' });
     Wedding.Wedding.hasMany(WeddingTimeline.WeddingTimeline, { as: 'WeddingTimeline' });
     Wedding.Wedding.hasMany(WeddingGuest.WeddingGuest);
+    Wedding.Wedding.hasMany(WeddingGuestGroup.WeddingGuestGroup);
 
     WeddingGuest.WeddingGuest.belongsTo(Wedding.Wedding);
     WeddingGuest.WeddingGuest.belongsToMany(WeddingGuest.WeddingGuest, { as: 'related', through: 'WeddingGuestRelatedAssociation' });
+    WeddingGuest.WeddingGuest.belongsTo(WeddingGuestGroup.WeddingGuestGroup, { as: 'group' });
+
+    WeddingGuestGroup.WeddingGuestGroup.belongsTo(Wedding.Wedding)
 
     WeddingTask.WeddingTask.belongsToMany(WeddingTaskTag.WeddingTaskTag, { through: 'WeddingTaskTagAssociation', as: { singular: 'tag', plural: 'tags' } })
 
@@ -92,6 +98,9 @@ export default function setup(s: Sequelize.Sequelize): void {
         include: [{
             model: WeddingGuest.WeddingGuest.unscoped(),
             as: 'related'
+        }, {
+            model: WeddingGuestGroup.WeddingGuestGroup,
+            as: 'group'
         }]
     }, { override: true });
 

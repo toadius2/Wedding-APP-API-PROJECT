@@ -3,6 +3,7 @@ import * as Sequelize from "sequelize"
 import uuid = require("uuid");
 import { WeddingInstance } from "./wedding";
 import { Op } from "sequelize";
+import { WeddingGuestGroupInstance } from "./wedding_guest_group";
 
 export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     first_name: string
@@ -12,7 +13,6 @@ export interface WeddingGuestAttributes extends base.BaseModelAttributes {
     attending_group: string[]
 
     age_group?: string;
-    group?: string;
     email?: string;
     phone?: string;
     status?: 'accepted' | 'declined' | 'maybe' | 'pending';
@@ -28,11 +28,15 @@ export interface WeddingGuestAttributes extends base.BaseModelAttributes {
 export interface WeddingGuestInstance extends Sequelize.Instance<WeddingGuestAttributes>, WeddingGuestAttributes {
     wedding_id: string
     related?: WeddingGuestInstance[]
+    group: WeddingGuestInstance
 
     addRelated: Sequelize.HasManyAddAssociationMixin<WeddingGuestInstance, string>
     removeRelated: Sequelize.HasManyRemoveAssociationMixin<WeddingGuestInstance, string>
 
     getWedding: Sequelize.BelongsToGetAssociationMixin<WeddingInstance>
+
+    setGroup: Sequelize.BelongsToSetAssociationMixin<WeddingGuestGroupInstance, string>
+
     sendInvitationEmail(): Promise<void>
 }
 
@@ -58,10 +62,6 @@ export function define(sequelize: Sequelize.Sequelize): void {
             allowNull: false
         },
         age_group: {
-            type: Sequelize.STRING(),
-            allowNull: true
-        },
-        group: {
             type: Sequelize.STRING(),
             allowNull: true
         },

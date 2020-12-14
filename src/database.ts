@@ -21,7 +21,7 @@ export default class DataBase {
             },
             operatorsAliases: false,
             define: {
-                timestamps: false,
+                timestamps: true,
                 paranoid: false,
                 underscored: true,
                 freezeTableName: true

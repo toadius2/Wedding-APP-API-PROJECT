@@ -7,6 +7,7 @@ import { NotAccessibleError, ResourceNotFoundError } from "../../error";
 import { isString, isBoolean, isArrayOfType, isEnum } from "../middleware/validationrules";
 import { WeddingGuest, WeddingGuestAttributes, WeddingGuestInstance } from "../../model/wedding_guest";
 import * as EmailValidator from "email-validator"
+import { WeddingGuestGroup, WeddingGuestGroupInstance } from "../../model/wedding_guest_group";
 
 const GuestMiddleware = BasicRouter.requireKeysOfTypes({
     first_name: isString,
@@ -14,7 +15,7 @@ const GuestMiddleware = BasicRouter.requireKeysOfTypes({
     'has_plus_one?': isBoolean,
     attending_group: isArrayOfType('string'),
     'age_group?': isEnum(['Adult', 'Teen', 'Child']),
-    'group?': isString,
+    group: isString,
     'email?': (value: any): true | string => {
         if (EmailValidator.validate(value)) {
             return true
@@ -29,6 +30,10 @@ const GuestMiddleware = BasicRouter.requireKeysOfTypes({
     'zip_code?': isString
 })
 
+const GuestGroupMiddleware = BasicRouter.requireKeysOfTypes({
+    name: isString
+})
+
 export class WeddingGuestRouter extends BasicRouter {
 
     constructor() {
@@ -36,15 +41,50 @@ export class WeddingGuestRouter extends BasicRouter {
         this.getInternalRouter().get('/wedding-guest', isAuthorized, hasWedding, WeddingGuestRouter.getWeddingGuests);
         this.getInternalRouter().get('/wedding-guest-emails', isAuthorized, hasWedding, WeddingGuestRouter.getWeddingGuestEmails);
         this.getInternalRouter().post('/wedding-guest', isAuthorized, hasWedding, GuestMiddleware, WeddingGuestRouter.newWeddingGuest);
-        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding, GuestMiddleware, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.updateWeddingGuest);
-        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.relateWeddingGuest);
-        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/request-rsvp', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.requestRSVP);
-        this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
+        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding, GuestMiddleware,
+            BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.updateWeddingGuest);
+        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding,
+            BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.relateWeddingGuest);
+        this.getInternalRouter().put('/wedding-guest/:wedding_guest_id/request-rsvp', isAuthorized, hasWedding,
+            BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.requestRSVP);
+        this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id/relation/:other_wedding_guest', isAuthorized, hasWedding,
+            BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteRelation);
         this.getInternalRouter().delete('/wedding-guest/:wedding_guest_id', isAuthorized, hasWedding,
             BasicRouter.populateModel(WeddingGuest, 'wedding_guest_id'), WeddingGuestRouter.deleteWeddingGuest);
 
+        this.getInternalRouter().post('/wedding-guest-group', isAuthorized, hasWedding, GuestGroupMiddleware,
+            WeddingGuestRouter.createWeddingGuestGroup);
+
+        this.getInternalRouter().get('/wedding-guest-group', isAuthorized, hasWedding,
+            WeddingGuestRouter.getWeddingGuestGroups);
+
+        this.getInternalRouter().delete('/wedding-guest-group/:id', isAuthorized, hasWedding, BasicRouter.populateModel(WeddingGuestGroup, 'id'),
+            WeddingGuestRouter.removeWedddingGuestGroup);
+
         this.getInternalRouter().get('/rsvp/:token', WeddingGuestRouter.getRSVP);
         this.getInternalRouter().put('/rsvp/:token', WeddingGuestRouter.updateRSVP);
+    }
+
+    private static getWeddingGuestGroups(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.getWeddingGuestGroups().then((groups) => {
+            res.jsonContent(groups);
+        }).catch(next)
+    }
+
+    private static removeWedddingGuestGroup(req: ModelRouteRequest<WeddingGuestGroupInstance>, res: APIResponse, next: express.NextFunction) {
+        if (req.currentModel.wedding_id === req.currentWedding!.id) {
+            req.currentModel.destroy().then(() => {
+                res.jsonContent({ 'message': 'Wedding Guest Group successfully deleted' });
+            }).catch(next)
+        } else {
+            next(new NotAccessibleError());
+        }
+    }
+
+    private static createWeddingGuestGroup(req: APIRequest, res: APIResponse, next: express.NextFunction) {
+        req.currentWedding!.createWeddingGuestGroup(req.body).then((group) => {
+            res.jsonContent(group);
+        }).catch(next)
     }
 
     private static getRSVP(req: APIRequest, res: APIResponse, next: express.NextFunction) {
@@ -81,12 +121,23 @@ export class WeddingGuestRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static newWeddingGuest(req: APIRequest<WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
-        return req.currentWedding!.createWeddingGuest(req.body).then(result => {
+    private static async newWeddingGuest(req: APIRequest<WeddingGuestAttributes & { group: string }>, res: APIResponse, next: express.NextFunction) {
+        const group = await WeddingGuestGroup.findById(req.body.group, { rejectOnEmpty: true });
+        if (group?.wedding_id != req.currentWedding?.id) {
+            return next(new NotAccessibleError());
+        }
+        req.sequelize.transaction((transaction) => {
+            return req.currentWedding!.createWeddingGuest(req.body, { transaction }).then(guest => {
+                return guest.setGroup(group!, { transaction }).then(() => {
+                    return guest.reload({ transaction })
+                })
+            })
+        }).then(result => {
             result.sendInvitationEmail()
             res.status(201).jsonContent(result);
             return null;
         }).catch(next);
+
     }
 
     private static async relateWeddingGuest(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
@@ -140,10 +191,20 @@ export class WeddingGuestRouter extends BasicRouter {
         }
     }
 
-    private static updateWeddingGuest(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes>, res: APIResponse, next: express.NextFunction) {
+    private static updateWeddingGuest(req: ModelRouteRequest<WeddingGuestInstance, WeddingGuestAttributes & { group: string }>, res: APIResponse, next: express.NextFunction) {
         if (req.currentModel.wedding_id === req.currentWedding!.id) {
             const sendEmail = req.body.email != req.currentModel.email
-            return req.currentModel.update(req.body).then((result) => {
+            req.sequelize.transaction((transaction) => {
+                const { group, ...update } = req.body
+                return req.currentModel.update(update, { transaction }).then((guest) => {
+                    if (group && group != req.currentModel.group.id) {
+                        return guest.setGroup(group, { transaction }).then(() => {
+                            return guest.reload({ transaction })
+                        })
+                    }
+                    return guest
+                })
+            }).then((result) => {
                 if (sendEmail) {
                     result.sendInvitationEmail()
                 }
