@@ -28,7 +28,7 @@ export interface WeddingGuestAttributes extends base.BaseModelAttributes {
 export interface WeddingGuestInstance extends Sequelize.Instance<WeddingGuestAttributes>, WeddingGuestAttributes {
     wedding_id: string
     related?: WeddingGuestInstance[]
-    group: WeddingGuestInstance
+    group: WeddingGuestGroupInstance
 
     addRelated: Sequelize.HasManyAddAssociationMixin<WeddingGuestInstance, string>
     removeRelated: Sequelize.HasManyRemoveAssociationMixin<WeddingGuestInstance, string>
