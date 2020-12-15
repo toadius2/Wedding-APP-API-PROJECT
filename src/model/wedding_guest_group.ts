@@ -20,9 +20,9 @@ export function define(sequelize: Sequelize.Sequelize): void {
     };
     WeddingGuestGroup = <Sequelize.Model<WeddingGuestGroupInstance, WeddingGuestGroupAttributes>>
         sequelize.define('WeddingGuestGroup', Object.assign({}, base.defaultColums(), definition) as any, {
-            paranoid: true,
+            paranoid: false,
             underscored: true,
-
+            indexes: [{ name: 'name_uq', fields: ['name', 'wedding_id'], unique: true }]
         });
     (<any>WeddingGuestGroup).prototype.toJSON = function () {
         let values = Object.assign({}, this.get());
