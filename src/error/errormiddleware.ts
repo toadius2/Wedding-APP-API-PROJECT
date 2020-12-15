@@ -11,7 +11,9 @@ export let prepareErrorForResponse = (err: Error, route?: string): BasicError =>
     if (err instanceof er.BasicError) {
     } else {
         if (err instanceof UniqueConstraintError) {
-            mperr = new ResourceAlreadyExists('Resource already exists', (<UniqueConstraintError>err).errors.map((error) => {
+            mperr = new ResourceAlreadyExists((<UniqueConstraintError>err).errors.map((error) => {
+                return error.path.replace('_uq', '').replace(/([a-z])([A-Z])/g, '$1 $2').split('.').join(' ') + ' already exists';
+            }).join('\n'), (<UniqueConstraintError>err).errors.map((error) => {
                 return error.path;
             }));
         } else if (<any>err instanceof seq.ValidationError) {
