@@ -18,7 +18,7 @@ export function isStringAndNotEmpty(value: any): true | string {
 }
 
 /**
- * This rule detects if the provided value is a string
+ * This rule detec0ts if the provided value is a string
  * @param value
  * @param allowEmpty
  * @returns {boolean}

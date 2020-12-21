@@ -31,7 +31,7 @@ export class WeddingTimelineRouter extends BasicRouter {
         }).catch(next);
     }
 
-    private static newWeddingTimeline(req: APIRequest<WeddingTimelineAttributes>, res: APIResponse, next: express.NextFunction) {
+        private static newWeddingTimeline(req: APIRequest<WeddingTimelineAttributes>, res: APIResponse, next: express.NextFunction) {
         req.currentWedding!.createWeddingTimeline(req.body).then(result => {
             res.status(201).jsonContent(result);
         }).catch(next);

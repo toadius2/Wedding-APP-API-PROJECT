@@ -23,6 +23,8 @@ export class GenericFacebookError extends BasicError {
     }
 }
 
+
+
 /**
  * This class defines an error with the facebook api when the provided authentication token is not valid or expired
  */
