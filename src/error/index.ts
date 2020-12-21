@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export { default as GenericDBError } from './genericdberror'
 export { default as MissingAuthorizationError } from './missingauthorizationerror'
 export { default as RouteNotFoundError } from './routenotfounderror'
@@ -18,4 +19,26 @@ export { default as NotSerializeableError } from "./notserializeableerror"
 export { default as InvalidLoginError } from "./invalidloginerror"
 export { default as NotImplementedError } from "./notimplementederror"
 export { default as NoWeddingFoundError } from "./noweddingfounderror"
+=======
+export { default as GenericDBError } from './genericdberror'
+export { default as MissingAuthorizationError } from './missingauthorizationerror'
+export { default as RouteNotFoundError } from './routenotfounderror'
+export { default as SessionNotFoundError } from './sessionnotfounderror'
+export { default as ResourceAlreadyExists } from './resourcealreadyexists'
+export { default as ValidationError } from './validationerror'
+export { default as InternalServerError } from './internalservererror'
+export { default as ResourceNotFoundError } from './resourcenotfounderror'
+export { default as NotAccessibleError } from './notaccessibleerror'
+export { default as InvalidParametersError } from './invalidparameterserror'
+export { default as WrongPasswordError } from "./wrongpassworderror"
+export { default as PaymentInfoMissingError } from "./paymentinfomissingerror"
+export { default as BasicError } from "./baseerror"
+export { default as SessionExpiredError } from "./sessionexpirederror"
+export { default as LimitReachedError } from "./limitreachederror"
+export { default as WrongImplementationError } from "./wrongimplementationerror"
+export { default as NotSerializeableError } from "./notserializeableerror"
+export { default as InvalidLoginError } from "./invalidloginerror"
+export { default as NotImplementedError } from "./notimplementederror"
+export { default as NoWeddingFoundError } from "./noweddingfounderror"
+>>>>>>> c2067604d8d706b34f7e84642e35a212911907c3
 export { default as RequestEntityTooLargeError } from "./requestentitytoolargeerror"
